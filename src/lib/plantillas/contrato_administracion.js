@@ -474,8 +474,8 @@ const PLANTILLA_ADMINISTRACION = {
       siempre: true,
       titulo: { es: 'NOTIFICACIONES', en: 'NOTIFICATIONS' },
       render: (ctx) => ({
-        es: `Cualquier comunicación sobre cuestiones relacionadas con la administración y mantenimiento de la PROPIEDAD administrada y de este contrato, las partes acuerdan en realizarse vía correo electrónico a las siguientes direcciones:\n\nEL ADMINISTRADOR: claudia@castlesolutions.biz\nTeléfono: +52 322 306 8482\n\nEL PROPIETARIO: ${ctx.propietario.email}\nTeléfono: ${ctx.propietario.celular}\n\nSiendo la única forma legal de hacerlo.`,
-        en: `Any communication on matters related to the administration and maintenance of the managed PROPERTY and this contract, the parties agree to be made by e-mail to the following addresses:\n\nTHE ADMINISTRATOR: claudia@castlesolutions.biz\nPhone: +52 322 306 8482\n\nTHE OWNER: ${ctx.propietario.email}\nPhone: ${ctx.propietario.celular}\n\nWhich will be the only legal way to do it.`,
+        es: `Cualquier comunicación sobre cuestiones relacionadas con la administración y mantenimiento de la PROPIEDAD administrada y de este contrato, las partes acuerdan en realizarse vía correo electrónico a las siguientes direcciones:\n\nEL ADMINISTRADOR:\nEmail: claudia@castlesolutions.biz\nTeléfono: +52 322 306 8482\n\nEL PROPIETARIO:\nEmail: ${ctx.propietario.email || '________________________'}\nTeléfono: ${ctx.propietario.celular || '________________________'}\n\nSiendo la única forma legal de hacerlo.`,
+        en: `Any communication on matters related to the administration and maintenance of the managed PROPERTY and this contract, the parties agree to be made by e-mail to the following addresses:\n\nTHE ADMINISTRATOR:\nEmail: claudia@castlesolutions.biz\nPhone: +52 322 306 8482\n\nTHE OWNER:\nEmail: ${ctx.propietario.email || '________________________'}\nPhone: ${ctx.propietario.celular || '________________________'}\n\nWhich will be the only legal way to do it.`,
       }),
     },
 
