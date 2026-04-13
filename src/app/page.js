@@ -498,8 +498,8 @@ export default function AdminGenPage() {
 
       {/* Footer — RDE regla 10 */}
       <footer className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-400">
-        <span>Castle Solutions — Hecho por duendes.app 2026</span>
-        
+        <a href="https://castlesolutions.mx" target="_blank" rel="noopener noreferrer" className="hover:text-teal-500 transition">Castle Solutions</a>
+        <span>Hecho por Colmena 2026</span>
       </footer>
     </div>
   );
