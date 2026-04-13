@@ -64,6 +64,12 @@ const BORDER_NONE = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
 const BORDERS_VISIBLE = { top: BORDER_THIN, bottom: BORDER_THIN, left: BORDER_THIN, right: BORDER_THIN };
 const BORDERS_NONE = { top: BORDER_NONE, bottom: BORDER_NONE, left: BORDER_NONE, right: BORDER_NONE };
 
+// Bordes elegantes: solo línea vertical central visible
+// Columna ES: solo borde derecho (la línea divisoria)
+const BORDERS_COL_ES = { top: BORDER_NONE, bottom: BORDER_NONE, left: BORDER_NONE, right: BORDER_THIN };
+// Columna EN: solo borde izquierdo (la línea divisoria)
+const BORDERS_COL_EN = { top: BORDER_NONE, bottom: BORDER_NONE, left: BORDER_THIN, right: BORDER_NONE };
+
 // Márgenes de celda
 const CELL_MARGINS = { top: 60, bottom: 60, left: 100, right: 100 };
 
@@ -169,99 +175,178 @@ function textoAParagrafos(texto, fontSize = FONT_SIZE_BODY, alignment = Alignmen
 // ============================================================
 
 /**
- * Crea una fila de la tabla bilingüe (una cláusula).
+ * Crea filas de la tabla bilingüe (una cláusula).
+ * IMPORTANTE: Devuelve ARRAY de filas, no una sola fila.
+ * Cada párrafo ES/EN se alinea en su propia fila para evitar descuadre.
  */
-function crearFilaClausula(bloque) {
-  const paragrafosEs = [];
-  const paragrafosEn = [];
-
-  // Título de cláusula (si tiene)
+function crearFilasClausula(bloque) {
+  const filas = [];
+  
+  // 1. FILA DE TÍTULO (si tiene)
   if (bloque.titulo || bloque.t) {
     const tituloEs = bloque.titulo?.es || bloque.t?.es || '';
     const tituloEn = bloque.titulo?.en || bloque.t?.en || '';
     const numPrefix = bloque.numero || bloque.n ? `${bloque.numero || bloque.n}.- ` : '';
 
-    if (tituloEs) {
-      paragrafosEs.push(new Paragraph({
-        children: [new TextRun({
-          text: `${numPrefix}${tituloEs}`,
-          font: FONT,
-          size: FONT_SIZE_TITLE,
-          bold: true,
-          underline: {},
-        })],
-        spacing: { after: 60 },
-      }));
-    }
-
-    if (tituloEn) {
-      paragrafosEn.push(new Paragraph({
-        children: [new TextRun({
-          text: `${numPrefix}${tituloEn}`,
-          font: FONT,
-          size: FONT_SIZE_TITLE,
-          bold: true,
-          underline: {},
-        })],
-        spacing: { after: 60 },
+    if (tituloEs || tituloEn) {
+      filas.push(new TableRow({
+        children: [
+          new TableCell({
+            borders: BORDERS_COL_ES,
+            width: { size: COL_ES, type: WidthType.DXA },
+            margins: CELL_MARGINS,
+            verticalAlign: VerticalAlign.TOP,
+            children: [new Paragraph({
+              children: [new TextRun({
+                text: `${numPrefix}${tituloEs}`,
+                font: FONT,
+                size: FONT_SIZE_TITLE,
+                bold: true,
+                underline: {},
+              })],
+              spacing: { after: 60 },
+            })],
+          }),
+          new TableCell({
+            borders: BORDERS_COL_EN,
+            width: { size: COL_EN, type: WidthType.DXA },
+            margins: CELL_MARGINS,
+            verticalAlign: VerticalAlign.TOP,
+            children: [new Paragraph({
+              children: [new TextRun({
+                text: `${numPrefix}${tituloEn}`,
+                font: FONT,
+                size: FONT_SIZE_TITLE,
+                bold: true,
+                underline: {},
+              })],
+              spacing: { after: 60 },
+            })],
+          }),
+        ],
       }));
     }
   }
 
-  // Subtítulo (para sub-secciones como a).- MANTENIMIENTO, b).- LIMPIEZA)
+  // 2. FILA DE SUBTÍTULO (si tiene)
   if (bloque.subtitulo) {
     const subEs = bloque.subtitulo?.es || '';
     const subEn = bloque.subtitulo?.en || '';
-    if (subEs) {
-      paragrafosEs.push(new Paragraph({
-        children: [new TextRun({
-          text: subEs,
-          font: FONT,
-          size: FONT_SIZE_BODY,
-          bold: true,
-        })],
-        spacing: { after: 60 },
-      }));
-    }
-    if (subEn) {
-      paragrafosEn.push(new Paragraph({
-        children: [new TextRun({
-          text: subEn,
-          font: FONT,
-          size: FONT_SIZE_BODY,
-          bold: true,
-        })],
-        spacing: { after: 60 },
+    if (subEs || subEn) {
+      filas.push(new TableRow({
+        children: [
+          new TableCell({
+            borders: BORDERS_COL_ES,
+            width: { size: COL_ES, type: WidthType.DXA },
+            margins: CELL_MARGINS,
+            verticalAlign: VerticalAlign.TOP,
+            children: [new Paragraph({
+              children: [new TextRun({
+                text: subEs,
+                font: FONT,
+                size: FONT_SIZE_BODY,
+                bold: true,
+              })],
+              spacing: { after: 60 },
+            })],
+          }),
+          new TableCell({
+            borders: BORDERS_COL_EN,
+            width: { size: COL_EN, type: WidthType.DXA },
+            margins: CELL_MARGINS,
+            verticalAlign: VerticalAlign.TOP,
+            children: [new Paragraph({
+              children: [new TextRun({
+                text: subEn,
+                font: FONT,
+                size: FONT_SIZE_BODY,
+                bold: true,
+              })],
+              spacing: { after: 60 },
+            })],
+          }),
+        ],
       }));
     }
   }
 
-  // Contenido
-  paragrafosEs.push(...textoAParagrafos(bloque.es));
-  paragrafosEn.push(...textoAParagrafos(bloque.en));
-
-  // Asegurar que haya al menos un párrafo por celda
-  if (paragrafosEs.length === 0) paragrafosEs.push(new Paragraph({ children: [] }));
-  if (paragrafosEn.length === 0) paragrafosEn.push(new Paragraph({ children: [] }));
-
-  return new TableRow({
-    children: [
-      new TableCell({
-        borders: BORDERS_VISIBLE,
-        width: { size: COL_ES, type: WidthType.DXA },
-        margins: CELL_MARGINS,
-        verticalAlign: VerticalAlign.TOP,
-        children: paragrafosEs,
-      }),
-      new TableCell({
-        borders: BORDERS_VISIBLE,
-        width: { size: COL_EN, type: WidthType.DXA },
-        margins: CELL_MARGINS,
-        verticalAlign: VerticalAlign.TOP,
-        children: paragrafosEn,
-      }),
-    ],
-  });
+  // 3. FILAS DE CONTENIDO (una fila por párrafo)
+  const textoEs = bloque.es || '';
+  const textoEn = bloque.en || '';
+  
+  // Dividir por doble salto de línea (párrafos)
+  const parrafosEs = textoEs.split('\n\n').filter(p => p.trim());
+  const parrafosEn = textoEn.split('\n\n').filter(p => p.trim());
+  
+  // Tomar el máximo de párrafos entre ambos idiomas
+  const maxParrafos = Math.max(parrafosEs.length, parrafosEn.length);
+  
+  for (let i = 0; i < maxParrafos; i++) {
+    const pEs = parrafosEs[i] || '';
+    const pEn = parrafosEn[i] || '';
+    
+    // Convertir \n simples a line breaks dentro del párrafo
+    const crearContenidoCelda = (texto) => {
+      if (!texto) return [new Paragraph({ children: [new TextRun({ text: '', font: FONT, size: FONT_SIZE_BODY })] })];
+      
+      const lineas = texto.split('\n');
+      const runs = [];
+      
+      for (let j = 0; j < lineas.length; j++) {
+        if (j > 0) {
+          runs.push(new TextRun({ break: 1, font: FONT, size: FONT_SIZE_BODY }));
+        }
+        runs.push(...parseTextoConNegritas(lineas[j], FONT_SIZE_BODY));
+      }
+      
+      return [new Paragraph({
+        children: runs,
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 80 },
+      })];
+    };
+    
+    filas.push(new TableRow({
+      children: [
+        new TableCell({
+          borders: BORDERS_COL_ES,
+          width: { size: COL_ES, type: WidthType.DXA },
+          margins: CELL_MARGINS,
+          verticalAlign: VerticalAlign.TOP,
+          children: crearContenidoCelda(pEs),
+        }),
+        new TableCell({
+          borders: BORDERS_COL_EN,
+          width: { size: COL_EN, type: WidthType.DXA },
+          margins: CELL_MARGINS,
+          verticalAlign: VerticalAlign.TOP,
+          children: crearContenidoCelda(pEn),
+        }),
+      ],
+    }));
+  }
+  
+  // Si no hay contenido, agregar fila vacía
+  if (filas.length === 0) {
+    filas.push(new TableRow({
+      children: [
+        new TableCell({
+          borders: BORDERS_COL_ES,
+          width: { size: COL_ES, type: WidthType.DXA },
+          margins: CELL_MARGINS,
+          children: [new Paragraph({ children: [] })],
+        }),
+        new TableCell({
+          borders: BORDERS_COL_EN,
+          width: { size: COL_EN, type: WidthType.DXA },
+          margins: CELL_MARGINS,
+          children: [new Paragraph({ children: [] })],
+        }),
+      ],
+    }));
+  }
+  
+  return filas;
 }
 
 /**
@@ -406,11 +491,13 @@ function crearAceptacion() {
   return [
     new Paragraph({ spacing: { before: 400 }, children: [] }),
     new Paragraph({
+      alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'LUGAR, FECHA Y HORA DE ACEPTACIÓN / ACCEPTANCE PLACE, DATE AND TIME:', font: FONT, size: FONT_SIZE_FIRMA, bold: true }),
       ],
     }),
     new Paragraph({
+      alignment: AlignmentType.CENTER,
       spacing: { before: 200 },
       children: [new TextRun({ text: '_____________________________________________________________', font: FONT, size: FONT_SIZE_FIRMA })],
     }),
@@ -437,7 +524,8 @@ export async function generarDocx(bloques, meta = {}, opciones = {}) {
   const bloqueFirmas = bloques.find(b => b.tipo === 'firmas');
 
   // Filas de la tabla principal (sin firmas)
-  const filas = bloquesNormales.map(b => crearFilaClausula(b));
+  // crearFilasClausula devuelve ARRAY de filas, hay que aplanar
+  const filas = bloquesNormales.flatMap(b => crearFilasClausula(b));
 
   // Tabla principal
   const tablaContrato = new Table({
@@ -458,9 +546,13 @@ export async function generarDocx(bloques, meta = {}, opciones = {}) {
     const firmas = bloqueFirmas.firmas || [];
 
     // Firmas de las partes
-    for (const firma of firmas) {
+    for (let i = 0; i < firmas.length; i++) {
+      const firma = firmas[i];
+      // Primera firma: más espacio (600), siguientes: menos (300)
+      const spacingBefore = i === 0 ? 600 : 300;
+      
       contenidoFirmas.push(
-        new Paragraph({ spacing: { before: 600 }, children: [] }),
+        new Paragraph({ spacing: { before: spacingBefore }, children: [] }),
         new Paragraph({
           alignment: AlignmentType.CENTER,
           children: [new TextRun({ text: '___________________________', font: FONT, size: FONT_SIZE_FIRMA })],
