@@ -324,7 +324,17 @@ export default function AdminGenPage() {
             <Input label="Dirección completa" value={data.campos.propiedad?.direccion} onChange={v => upCampo("propiedad", "direccion", v)} placeholder="Condominio, dirección, municipio, estado, CP" required wide rows={3} />
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Tipo de propiedad</label>
-              <select value={data.campos.propiedad?.tipo_propiedad || "condominio"} onChange={e => upCampo("propiedad", "tipo_propiedad", e.target.value)}
+              <select value={data.campos.propiedad?.tipo_propiedad || "condominio"} onChange={e => {
+                const tipo = e.target.value;
+                const esCondo = tipo === "condominio" || tipo === "penthouse";
+                upCampo("propiedad", "tipo_propiedad", tipo);
+                upCampo("propiedad", "es_condominio", esCondo);
+                if (!esCondo) {
+                  setData(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: false, cl_acceso_condominios: false, cl_asambleas: false}}));
+                } else {
+                  setData(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: true, cl_acceso_condominios: true, cl_asambleas: true}}));
+                }
+              }}
                 className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800">
                 <option value="condominio">Condominio / Departamento</option>
                 <option value="casa">Casa</option>
@@ -332,10 +342,11 @@ export default function AdminGenPage() {
                 <option value="penthouse">Penthouse</option>
               </select>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <input type="checkbox" checked={data.campos.propiedad?.es_condominio !== false} onChange={e => upCampo("propiedad", "es_condominio", e.target.checked)} className="rounded" />
-              <label className="text-sm">Parte de un conjunto condominal</label>
-            </div>
+            {!(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && (
+              <div className="col-span-2 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-700 dark:text-amber-300">Las cláusulas de condominio (áreas comunes, acceso, asambleas) se desactivan automáticamente para este tipo de propiedad.</p>
+              </div>
+            )}
           </Section>
           <Section title="Vigencia y firma">
             <Input label="Fecha de inicio" value={data.campos.vigencia?.fecha_inicio} onChange={v => upCampo("vigencia", "fecha_inicio", v)} type="date" required />
@@ -400,10 +411,12 @@ export default function AdminGenPage() {
           <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={data.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
           <Toggle label="Servicios de limpieza" sub="Limpieza ordinaria y extraordinaria, productos, personal" checked={data.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
 
+          {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Condominios</p></div>
           <Toggle label="Responsabilidad áreas comunes" sub="Deslinde: áreas comunes = responsabilidad del admin condominal" checked={data.bloques.cl_condominio_areas} onChange={() => togBloque("cl_condominio_areas")} />
           <Toggle label="Acceso a condominios" sub="Owner hace arreglos para acceso ininterrumpido del admin" checked={data.bloques.cl_acceso_condominios} onChange={() => togBloque("cl_acceso_condominios")} />
           <Toggle label="Representación en asambleas" sub="Admin representa al owner en asamblea con proxy ($100+IVA/2hrs)" checked={data.bloques.cl_asambleas} onChange={() => togBloque("cl_asambleas")} />
+          </>}
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Protecciones</p></div>
           <Toggle label="Cláusula de responsabilidad" sub="Admin no responsable por temas judiciales/penales del owner" checked={data.bloques.cl_responsabilidad} onChange={() => togBloque("cl_responsabilidad")} />
