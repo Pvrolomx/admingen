@@ -359,7 +359,14 @@ export default function AdminGenPage() {
                 <option value="24">24 meses</option>
               </select>
             </div>
-            <Input label="Ciudad de firma" value={data.campos.vigencia?.ciudad_firma} onChange={v => upCampo("vigencia", "ciudad_firma", v)} />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Ciudad de firma</label>
+              <select value={data.campos.vigencia?.ciudad_firma || "Puerto Vallarta, Jalisco"} onChange={e => upCampo("vigencia", "ciudad_firma", e.target.value)}
+                className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800">
+                <option value="Puerto Vallarta, Jalisco">Puerto Vallarta, Jalisco</option>
+                <option value="Nuevo Vallarta, Nayarit">Nuevo Vallarta, Nayarit</option>
+              </select>
+            </div>
             <Input label="Días de aviso para cancelación" value={data.campos.vigencia?.dias_aviso_cancelacion} onChange={v => upCampo("vigencia", "dias_aviso_cancelacion", v)} type="number" />
             <Input label="Juegos de llaves" value={data.campos.vigencia?.num_llaves} onChange={v => upCampo("vigencia", "num_llaves", v)} type="number" />
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
