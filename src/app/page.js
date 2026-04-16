@@ -145,10 +145,17 @@ function Input({ label, value, onChange, type = "text", placeholder = "", requir
   );
 }
 
-function Toggle({ label, sub, checked, onChange }) {
+function Toggle({ label, sub, checked, onChange, disabled }) {
   return (
-    <div onClick={() => onChange(!checked)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${checked ? "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800" : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"}`}>
-      <div className={`w-10 h-5 rounded-full relative transition-colors ${checked ? "bg-teal-500" : "bg-gray-300 dark:bg-gray-600"}`}>
+    <div
+      onClick={() => !disabled && onChange(!checked)}
+      className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${
+        disabled
+          ? "bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-50 cursor-not-allowed"
+          : "cursor-pointer " + (checked ? "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800" : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700")
+      }`}
+    >
+      <div className={`w-10 h-5 rounded-full relative transition-colors ${checked && !disabled ? "bg-teal-500" : "bg-gray-300 dark:bg-gray-600"}`}>
         <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${checked ? "left-5" : "left-0.5"}`} />
       </div>
       <div className="flex-1 min-w-0">
@@ -193,7 +200,16 @@ export default function AdminGenPage() {
   const addPersona = (pid) => setData(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: [...d.partes[pid].personas, { nombre: "", genero: "M" }] } } }));
   const rmPersona = (pid, i) => setData(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: d.partes[pid].personas.filter((_, j) => j !== i) } } }));
   const upCampo = (sec, k, v) => setData(d => ({ ...d, campos: { ...d.campos, [sec]: { ...d.campos[sec], [k]: v } } }));
-  const togBloque = (id) => setData(d => ({ ...d, bloques: { ...d.bloques, [id]: !d.bloques[id] } }));
+  const togBloque = (id) => setData(d => {
+    const nuevoValor = !d.bloques[id];
+    const nuevosBloques = { ...d.bloques, [id]: nuevoValor };
+    // Si se apaga cl_limpieza, apagar también los accesorios b.1 y b.2
+    if (id === "cl_limpieza" && !nuevoValor) {
+      nuevosBloques.cl_limpieza_logistica = false;
+      nuevosBloques.cl_limpieza_inspecciones = false;
+    }
+    return { ...d, bloques: nuevosBloques };
+  });
   const loadDemo = () => setData(JSON.parse(JSON.stringify(DEMO)));
   const resetAll = () => { setData(JSON.parse(JSON.stringify(INIT))); setStep(0); localStorage.removeItem("admingen_draft"); };
 
@@ -421,8 +437,12 @@ export default function AdminGenPage() {
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Servicios</p></div>
           <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={data.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
           <Toggle label="Servicios de limpieza" sub="Alcance: la cuota no incluye limpieza. Tipos: light/check-out/deep. Lógica deep→light" checked={data.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
-          <Toggle label="Limpieza — logística y tarifas" sub="Preaviso 7 días, emergencias con cargo, domingos/festivos doble tarifa, productos por cuenta del owner" checked={data.bloques.cl_limpieza_logistica} onChange={() => togBloque("cl_limpieza_logistica")} />
-          <Toggle label="Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={data.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} />
+          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — logística y tarifas" sub="Preaviso 7 días, emergencias con cargo, domingos/festivos doble tarifa, productos por cuenta del owner" checked={data.bloques.cl_limpieza_logistica} onChange={() => togBloque("cl_limpieza_logistica")} disabled={!data.bloques.cl_limpieza} />
+          </div>
+          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={data.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} disabled={!data.bloques.cl_limpieza} />
+          </div>
 
           {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Condominios</p></div>
