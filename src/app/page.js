@@ -64,7 +64,8 @@ const DEMO = {
       dias_inconformidad: 30,
     },
     testigos: {
-      incluir_testigos: true,
+      incluir_testigos: false,
+      incluir_aceptacion: false,
     },
   },
 };
@@ -116,7 +117,7 @@ const INIT = {
       incluir_codigo_acceso: true,
     },
     reportes: { dias_reporte: 30, dias_inconformidad: 30 },
-    testigos: { incluir_testigos: true },
+    testigos: { incluir_testigos: false, incluir_aceptacion: false },
   },
 };
 
@@ -481,11 +482,9 @@ export default function AdminGenPage() {
           <Toggle label="Aviso de venta" sub="Owner avisa 30 días antes del cierre de venta" checked={data.bloques.cl_venta_propiedad} onChange={() => togBloque("cl_venta_propiedad")} />
           <Toggle label="Facturas deducibles (RFC)" sub="Owner provee RFC para facturas fiscales" checked={data.bloques.cl_facturas} onChange={() => togBloque("cl_facturas")} />
 
-          <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Otros</p></div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-            <input type="checkbox" checked={data.campos.testigos?.incluir_testigos !== false} onChange={e => upCampo("testigos", "incluir_testigos", e.target.checked)} className="rounded" />
-            <label className="text-sm font-medium">Incluir líneas de testigos</label>
-          </div>
+          <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Otros — Final del documento</p></div>
+          <Toggle label="Incluir líneas de testigos" sub="Testigo 1 / Witness 1 y Testigo 2 / Witness 2. OFF por default — no se requieren en contratos privados de prestación de servicios." checked={data.campos.testigos?.incluir_testigos === true} onChange={v => upCampo("testigos", "incluir_testigos", v)} />
+          <Toggle label="Incluir lugar/fecha de aceptación" sub="'LUGAR, FECHA Y HORA DE ACEPTACIÓN'. OFF por default — típico de ofertas unilaterales, no de contratos bilaterales." checked={data.campos.testigos?.incluir_aceptacion === true} onChange={v => upCampo("testigos", "incluir_aceptacion", v)} />
         </div>}
 
         {/* STEP 4 — PREVIEW */}

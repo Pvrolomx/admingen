@@ -140,8 +140,8 @@ export function ensamblarContexto(plantilla, datos) {
     ...bloquePrecio(montoPenalidad, moneda),
   };
 
-  // Testigos y aceptación
-  ctx.testigos = datos.campos?.testigos || { incluir_testigos: false, incluir_aceptacion: true };
+  // Testigos y aceptación — AdminGen default OFF (contrato privado bilateral)
+  ctx.testigos = datos.campos?.testigos || { incluir_testigos: false, incluir_aceptacion: false };
 
   // ============================================================
   // 5. RESOLVER FECHAS
@@ -366,8 +366,8 @@ export function ensamblarContexto(plantilla, datos) {
       ctx.propietario.celular = parteProp.personas?.[0]?.celular || parteProp.celular || '';
     }
 
-    // Testigos
-    ctx.testigos = datos.campos?.testigos || { incluir_testigos: true };
+    // Testigos y aceptación
+    ctx.testigos = datos.campos?.testigos || { incluir_testigos: false, incluir_aceptacion: false };
   }
 
   return ctx;
