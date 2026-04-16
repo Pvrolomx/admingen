@@ -25,6 +25,7 @@ const DEMO = {
     cl_limpieza: true,
     cl_limpieza_logistica: true,
     cl_limpieza_inspecciones: true,
+    cl_limpieza_personal: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -82,6 +83,7 @@ const INIT = {
     cl_limpieza: true,
     cl_limpieza_logistica: true,
     cl_limpieza_inspecciones: true,
+    cl_limpieza_personal: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -203,10 +205,11 @@ export default function AdminGenPage() {
   const togBloque = (id) => setData(d => {
     const nuevoValor = !d.bloques[id];
     const nuevosBloques = { ...d.bloques, [id]: nuevoValor };
-    // Si se apaga cl_limpieza, apagar también los accesorios b.1 y b.2
+    // Si se apaga cl_limpieza, apagar también los accesorios b.1, b.2 y b.3
     if (id === "cl_limpieza" && !nuevoValor) {
       nuevosBloques.cl_limpieza_logistica = false;
       nuevosBloques.cl_limpieza_inspecciones = false;
+      nuevosBloques.cl_limpieza_personal = false;
     }
     return { ...d, bloques: nuevosBloques };
   });
@@ -442,6 +445,9 @@ export default function AdminGenPage() {
           </div>
           <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
             <Toggle label="↳ Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={data.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} disabled={!data.bloques.cl_limpieza} />
+          </div>
+          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — personal contratado" sub="Owner/condominio que contrata directo asume responsabilidades laborales. Admin que contrata asume las suyas (Jalisco/Nayarit)" checked={data.bloques.cl_limpieza_personal} onChange={() => togBloque("cl_limpieza_personal")} disabled={!data.bloques.cl_limpieza} />
           </div>
 
           {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>

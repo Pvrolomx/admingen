@@ -353,6 +353,20 @@ const PLANTILLA_ADMINISTRACION = {
       }),
     },
 
+    // 3b.3 — LIMPIEZA · PERSONAL CONTRATADO (responsabilidades laborales)
+    {
+      id: 'cl_limpieza_personal',
+      condicional: true,
+      default: true,
+      etiqueta: 'Limpieza — personal contratado',
+      etiqueta_en: 'Cleaning — contracted staff',
+      subtitulo: { es: 'b.3).- PERSONAL DE LIMPIEZA Y RESPONSABILIDADES LABORALES', en: 'b.3).- CLEANING STAFF AND LABOR RESPONSIBILITIES' },
+      render: (ctx) => ({
+        es: `En el supuesto de que previamente a la firma del presente contrato, EL PROPIETARIO y/o el Conjunto Condominal al que pertenece la propiedad hayan contratado directamente al personal de aseo y mozos para dar servicio de limpieza a la propiedad, el pago de sueldos y prestaciones sociales, así como las responsabilidades laborales derivadas de tal situación serán responsabilidad exclusiva de quienes los hayan contratado, limitándose EL ADMINISTRADOR a verificar que tales tareas se cumplan conforme a las instrucciones recibidas por EL PROPIETARIO. Cuando EL ADMINISTRADOR tenga contrato con o contrate al personal de limpieza y los demás prestadores de servicios para ejecución de los servicios prestados en virtud del presente contrato, cualquier salario, beneficios de acuerdo a las leyes laborales de los estados de Jalisco y Nayarit, y ruptura o costos relacionados con terminar esas relaciones laborales serán pagados por EL ADMINISTRADOR.`,
+        en: `In the event that, prior to the execution of this contract, THE OWNER and/or the Condominium Complex to which the property belongs has directly contracted the cleaning staff and housekeepers to provide cleaning services to the property, the payment of salaries and benefits, as well as the labor responsibilities arising from such situation, shall be the exclusive responsibility of those who have contracted them, with THE ADMINISTRATOR being limited to verifying that such tasks are performed in accordance with the instructions received from THE OWNER. When THE ADMINISTRATOR has a contract with or hires the cleaning staff and other service providers for the execution of the services provided under this contract, any salary, benefits in accordance with the labor laws of the states of Jalisco and Nayarit, and severance or costs related to terminating such labor relationships shall be paid by THE ADMINISTRATOR.`,
+      }),
+    },
+
     // 3c — PAGOS POR SERVICIOS Y COMPRAS
     {
       id: 'cl_pagos_servicios',
