@@ -1,15 +1,16 @@
 /**
- * OfertaGen — Generador DOCX Bilingüe
+ * AdminGen — Generador DOCX Bilingüe
  * 
  * Convierte bloques renderizados en un documento Word
  * con formato de tabla lado a lado (ES | EN).
  * 
- * Reproduce el formato exacto de OFERTA_DENNIS_3.docx:
+ * Formato:
  * - Tabla de 2 columnas (español izquierda, inglés derecha)
  * - Títulos en negrita y subrayado
- * - Referencias contractuales en negrita
+ * - Referencias contractuales en negrita (EL ADMINISTRADOR, EL PROPIETARIO, etc.)
+ * - Cantidades de dinero con símbolo en negrita ($125 USD, $100.00 M.N.)
  * - Sección de firmas al final
- * - US Letter, márgenes de 1 pulgada
+ * - US Letter, márgenes de 0.75 pulgadas
  */
 
 import {
@@ -87,17 +88,18 @@ const LOGO_HEIGHT = 50;  // pixels (ratio ~2.4:1 típico de logos)
 
 /**
  * Detecta referencias contractuales en el texto y las pone en negrita.
- * Ej: "EL OFERTANTE" → negrita, "LA PROPIETARIA" → negrita
- * También detecta texto entre comillas que son referencias: "EL OFERTANTE"
+ * Ej: "EL ADMINISTRADOR" → negrita, "EL PROPIETARIO" → negrita
+ * También detecta cantidades de dinero con símbolo: "$125 USD", "$100.00 M.N."
  */
 function parseTextoConNegritas(texto, fontSize = FONT_SIZE_BODY) {
   if (!texto) return [new TextRun({ text: '', font: FONT, size: fontSize })];
 
   const runs = [];
-  // Patrón 1: referencias contractuales (EL OFERTANTE, THE OWNER, etc.)
+  // Patrón 1: referencias contractuales con artículo (EL ADMINISTRADOR, THE OWNER, LA ADMINISTRACIÓN, etc.)
   // Patrón 2: nombres propios en mayúsculas (DENNIS DREISBACH DOTY, etc.)
-  // Patrón 3: términos clave (FECHA DE FORMALIZACIÓN, TÉRMINO DE VIGENCIA, etc.)
-  const pattern = /((?:"|")?(?:EL|LA|LOS|LAS|THE)\s+(?:OFERTANTE|PROPIETARI[OA]|VENDEDOR[A]?|COMPRADOR[A]?|OFFERER|OWNER|SELLER|BUYER|INMUEBLE|PROPERTY|FORMALIZ\w+|BENEFICIARI[OA]?|FIDEICOMISO)(?:S)?(?:"|")?|(?:FECHA DE FORMALIZACIÓN|TÉRMINO DE VIGENCIA|TERM OF EFFECT|FORMALIZING DATE|GASTOS DE ESCRITURACIÓN|CLOSING COSTS|CUENTA ESCROW|ESCROW ACCOUNT|ANEXO [A-Z])|(?:[A-ZÁÉÍÓÚÑÜ]{2,}(?:\s+[A-ZÁÉÍÓÚÑÜ]{2,}){1,5})(?=,|\s+(?:quien|who|manifiesta|states|por|de|herein|y\s|en\s|a\s)))/g;
+  // Patrón 3: términos clave (FECHA DE FORMALIZACIÓN, ANEXO A, etc.)
+  // Patrón 4: cantidades de dinero con símbolo $ ($125, $125.00 USD, $100.00 M.N., $1,250.50 pesos)
+  const pattern = /((?:"|")?(?:EL|LA|LOS|LAS|THE)\s+(?:OFERTANTE|PROPIETARI[OA]|VENDEDOR[A]?|COMPRADOR[A]?|ADMINISTRADOR[A]?|ADMINISTRACIÓN|ADMINISTRATION|OFFERER|OWNER|SELLER|BUYER|ADMINISTRATOR|INMUEBLE|PROPERTY|FORMALIZ\w+|BENEFICIARI[OA]?|FIDEICOMISO)(?:S|ES)?(?:"|")?|(?:FECHA DE FORMALIZACIÓN|TÉRMINO DE VIGENCIA|TERM OF EFFECT|FORMALIZING DATE|GASTOS DE ESCRITURACIÓN|CLOSING COSTS|CUENTA ESCROW|ESCROW ACCOUNT|ANEXO [A-Z])|(?:[A-ZÁÉÍÓÚÑÜ]{2,}(?:\s+[A-ZÁÉÍÓÚÑÜ]{2,}){1,5})(?=,|\s+(?:quien|who|manifiesta|states|por|de|herein|y\s|en\s|a\s))|\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?(?:\s*(?:USD|MXN|MN|M\.N\.|pesos\s+mexicanos|pesos|mexican\s+pesos|US\s+dollars|dólares\s+americanos|dólares|dollars))?)/g;
 
   let lastIndex = 0;
   let match;
