@@ -404,6 +404,20 @@ const PLANTILLA_ADMINISTRACION = {
       }),
     },
 
+    // 3d — PLUS DE ASISTENCIA LEGAL (beneficio incluido con Castle Solutions)
+    {
+      id: 'cl_asistencia_legal',
+      condicional: true,
+      default: true,
+      etiqueta: 'Plus de asistencia legal',
+      etiqueta_en: 'Legal assistance add-on',
+      subtitulo: { es: 'd).- PLUS DE ASISTENCIA LEGAL', en: 'd).- LEGAL ASSISTANCE ADD-ON' },
+      render: (ctx) => ({
+        es: `Como beneficio incluido en la administración contratada por virtud del presente instrumento, EL PROPIETARIO gozará de acceso a asistencia legal preferente en relación con LA PROPIEDAD materia de este contrato, a través del despacho profesional vinculado a EL ADMINISTRADOR.\n\nLas consultas de orientación breve que EL PROPIETARIO requiera respecto de asuntos relacionados con LA PROPIEDAD —incluyendo materia inmobiliaria, condominal, migratoria, fiscal y de otra índole conexa— serán atendidas de manera preferente y sin costo, a criterio de EL ADMINISTRADOR y conforme a la complejidad y duración de la consulta.\n\nCuando la consulta requiera la ejecución de trámites, gestiones, redacción de documentos, representación o cualquier otro servicio profesional que exceda el alcance de la orientación breve, EL ADMINISTRADOR presentará a EL PROPIETARIO la estrategia propuesta y, en su caso, el presupuesto correspondiente, los cuales serán materia de acuerdo posterior entre las partes y en su caso con el profesional que corresponda, sin que el presente contrato genere obligación alguna de prestación gratuita de dichos servicios adicionales.\n\nEste beneficio no sustituye ni limita el derecho de EL PROPIETARIO de acudir con el asesor legal de su preferencia, y se otorga como cortesía profesional derivada de la relación de administración aquí pactada.`,
+        en: `As a benefit included in the administration services contracted by virtue of this instrument, THE OWNER shall have access to preferential legal assistance in connection with THE PROPERTY subject matter of this contract, through the professional firm associated with THE ADMINISTRATOR.\n\nBrief consultations requested by THE OWNER regarding matters related to THE PROPERTY —including real estate, condominium, immigration, tax, and other related matters— shall be attended to on a preferential basis and at no cost, at the discretion of THE ADMINISTRATOR and according to the complexity and duration of the consultation.\n\nWhen a consultation requires the execution of procedures, filings, drafting of documents, representation, or any other professional service that exceeds the scope of brief guidance, THE ADMINISTRATOR shall present THE OWNER with the proposed strategy and, where applicable, the corresponding budget, which shall be subject to subsequent agreement between the parties and, where applicable, with the corresponding professional, with this contract not creating any obligation to render such additional services free of charge.\n\nThis benefit does not replace or limit THE OWNER'S right to consult with the legal advisor of their preference, and is granted as a professional courtesy arising from the administration relationship agreed upon herein.`,
+      }),
+    },
+
     // CLÁUSULA 4 — CONTRATACIÓN Y SUPERVISIÓN
     {
       id: 'cl_supervision',

@@ -26,6 +26,7 @@ const DEMO = {
     cl_limpieza_logistica: true,
     cl_limpieza_inspecciones: true,
     cl_limpieza_personal: true,
+    cl_asistencia_legal: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -84,6 +85,7 @@ const INIT = {
     cl_limpieza_logistica: true,
     cl_limpieza_inspecciones: true,
     cl_limpieza_personal: true,
+    cl_asistencia_legal: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -449,6 +451,9 @@ export default function AdminGenPage() {
           <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
             <Toggle label="↳ Limpieza — personal contratado" sub="Owner/condominio que contrata directo asume responsabilidades laborales. Admin que contrata asume las suyas (Jalisco/Nayarit)" checked={data.bloques.cl_limpieza_personal} onChange={() => togBloque("cl_limpieza_personal")} disabled={!data.bloques.cl_limpieza} />
           </div>
+
+          <div className="mt-3 mb-2"><p className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">⚖️ Valor agregado Castle Solutions</p></div>
+          <Toggle label="Plus de asistencia legal" sub="Consultas breves sin costo sobre la propiedad (inmobiliario, condominal, migratorio, fiscal). Trámites mayores se negocian con estrategia y presupuesto." checked={data.bloques.cl_asistencia_legal} onChange={() => togBloque("cl_asistencia_legal")} />
 
           {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Condominios</p></div>
