@@ -311,7 +311,7 @@ const PLANTILLA_ADMINISTRACION = {
       }),
     },
 
-    // 3b — LIMPIEZA
+    // 3b — LIMPIEZA (base: alcance, tipos, lógica deep→light)
     {
       id: 'cl_limpieza',
       condicional: true,
@@ -320,8 +320,36 @@ const PLANTILLA_ADMINISTRACION = {
       etiqueta_en: 'Cleaning services',
       subtitulo: { es: 'b).- SERVICIOS DE LIMPIEZA', en: 'b).- CLEANING SERVICES' },
       render: (ctx) => ({
-        es: `El servicio de limpieza consistirá en barrer, trapear, sacudir, acomodar, cambiar y lavar toallas y blancos, limpiar baños, de acuerdo a los estándares que para tales tareas se establezcan al ADMINISTRADOR. El costo de éste servicio no está incluido dentro de la cuota mensual por administración y mantenimiento, por tal motivo éste servicio se cargará a la cuenta del propietario en forma adicional.\n\nLos servicios de limpieza solicitados serán considerados servicios extraordinarios y serán cargados al PROPIETARIO o a quien ocupe la finca y solicite el servicio.\n\nEn el supuesto de que previamente a la firma del presente contrato, EL PROPIETARIO y/o el Conjunto Condominal al que pertenece la propiedad hayan contratado directamente al personal de aseo y mozos para dar servicio de limpieza a la propiedad, el pago de sueldos y prestaciones sociales, así como las responsabilidades laborales derivadas de tal situación serán responsabilidad exclusiva de quienes los hayan contratado, limitándose EL ADMINISTRADOR a verificar que tales tareas se cumplan conforme a las instrucciones recibidas por EL PROPIETARIO. Cuando el ADMINISTRADOR tenga contrato con o contrate a el personal de limpieza y los demás prestadores de servicios para ejecución de los servicios prestados en virtud del presente contrato, cualquier salario, beneficios de acuerdo a las leyes laborales de el estado de Jalisco y ruptura o costos relacionados con terminar esas relaciones laborales serán pagados por el ADMINISTRADOR.\n\nLos servicios extraordinarios de limpieza deberán ser solicitados por correo electrónico al ADMINISTRADOR con 24 (veinticuatro) horas de anticipación y estarán sujetos a la disponibilidad del personal. EL PROPIETARIO pagará los servicios de limpieza ordinarios y extraordinarios que solicite así como los productos de limpieza y utilería necesarios para el aseo de la propiedad. EL ADMINISTRADOR cargará a la cuenta de gastos del PROPIETARIO los cargos que se hayan solicitado conforme a la tarifa aplicable a cada caso.`,
-        en: `The cleaning service will consist of sweeping, mopping, dusting, arranging, washing and changing sheets and towels, clean bathrooms, according to the standards established for those tasks to THE ADMINISTRATOR. The cost of this service is not included in the monthly fee for administration and maintenance, for that reason this service will be charged to the homeowner's expenses account separately.\n\nCleaning services requested will be considered as an extraordinary service and will be charged to THE OWNER, or whoever is occupying the PROPERTY and is requesting the service.\n\nIn the case that prior to the signing of this contract, THE OWNER and/or the Condominium Complex to which the property belongs to, has contracted directly the cleaning staff for the property, the payment of salaries and benefits, the work responsibilities arising from this situation are responsibilities of those who have contracted them, limiting THE ADMINISTRATOR liability to verify the completion of the tasks in accordance with the instructions received by THE OWNER. When THE ADMINISTRATOR contracts with or hires the maids and any others to execute the services provided under this contract, any salaries, wages, benefits according with the labor law in the state of Jalisco and severance or related costs of terminating those relationships will be paid by THE ADMINISTRATOR.\n\nExtraordinary cleaning services must be asked via email to THE ADMINISTRATOR with a 24 (twenty four) hour notice and will depend on the availability of the staff. THE OWNER will pay the requested ordinary and extraordinary cleaning services as well for the cleaning products and tools necessary for cleaning and maintenance. THE ADMINISTRATOR will charge to the homeowner's expenses account these charges in accordance with the fare applicable to each case.`,
+        es: `La cuota mensual por administración y mantenimiento (cuota de mantenimiento) no incluye servicio alguno de limpieza dentro de las unidades privadas.\n\nEL ADMINISTRADOR reconoce los siguientes tipos de servicios de limpieza: limpieza ligera (light cleaning), limpieza de salida (check-out cleaning) y limpieza profunda (deep cleaning).\n\nSe recomienda que la limpieza ligera se realice de manera periódica, particularmente cuando la unidad permanezca desocupada, con el fin de prevenir el deterioro de la propiedad.\n\nEn caso de que la limpieza ligera no se realice periódicamente y la unidad permanezca desocupada, EL ADMINISTRADOR tendrá el derecho de requerir una limpieza profunda previa a la siguiente ocupación.\n\nEl costo de dicha limpieza profunda será cargado al propietario y/o al ocupante de la unidad, según corresponda.`,
+        en: `The monthly administration and maintenance fee (cuota de mantenimiento) does not include any cleaning services within private units.\n\nTHE ADMINISTRATOR recognizes the following types of cleaning services: light cleaning, check-out cleaning, and deep cleaning.\n\nIt is recommended that a light cleaning be carried out on a regular basis, particularly when the unit remains unoccupied, in order to prevent deterioration of the property.\n\nIf light cleaning is not performed periodically and the unit remains unoccupied, THE ADMINISTRATOR shall be entitled to require a deep cleaning prior to any subsequent occupancy.\n\nThe cost of such deep cleaning shall be charged to the unit owner and/or occupant, as applicable.`,
+      }),
+    },
+
+    // 3b.1 — LIMPIEZA · LOGÍSTICA (preaviso, emergencias, domingos/festivos, productos)
+    {
+      id: 'cl_limpieza_logistica',
+      condicional: true,
+      default: true,
+      etiqueta: 'Limpieza — logística y tarifas',
+      etiqueta_en: 'Cleaning — logistics and fees',
+      subtitulo: { es: 'b.1).- SOLICITUD Y TARIFAS DE SERVICIOS DE LIMPIEZA', en: 'b.1).- REQUEST AND FEES FOR CLEANING SERVICES' },
+      render: (ctx) => ({
+        es: `Todos los servicios de limpieza deberán solicitarse con una anticipación mínima de 7 (siete) días.\n\nLos servicios de limpieza de emergencia podrán solicitarse con menor anticipación; sin embargo, dichos servicios estarán sujetos a disponibilidad y generarán un cargo adicional.\n\nLos servicios de limpieza solicitados para ejecutarse en domingo o día festivo oficial se cargarán al doble de la tarifa aplicable, de conformidad con la legislación laboral mexicana.\n\nLos productos, materiales y herramientas de limpieza necesarios para la prestación de cualquier tipo de servicio de limpieza deberán ser proporcionados por el propietario de la unidad.`,
+        en: `All cleaning services must be requested at least 7 (seven) days in advance.\n\nEmergency cleaning services may be requested with less notice; however, such services will be subject to availability and will incur an additional charge.\n\nCleaning services requested on Sundays or official holidays shall be charged at double the applicable rate, in accordance with Mexican labor laws.\n\nAll cleaning products, materials, and tools required for any type of cleaning service must be provided by the unit owner.`,
+      }),
+    },
+
+    // 3b.2 — LIMPIEZA · INSPECCIONES (con aviso razonable)
+    {
+      id: 'cl_limpieza_inspecciones',
+      condicional: true,
+      default: true,
+      etiqueta: 'Limpieza — inspecciones periódicas',
+      etiqueta_en: 'Cleaning — periodic inspections',
+      subtitulo: { es: 'b.2).- INSPECCIONES PERIÓDICAS DE LA UNIDAD', en: 'b.2).- PERIODIC INSPECTIONS OF THE UNIT' },
+      render: (ctx) => ({
+        es: `EL ADMINISTRADOR podrá realizar inspecciones periódicas de la unidad para verificar el estado de la propiedad, previo aviso razonable al ocupante cuando la unidad se encuentre ocupada. Dichas inspecciones se limitarán a verificar el funcionamiento de electrodomésticos, detectar fugas, asegurar la adecuada ventilación de la unidad y, cuando aplique, regar plantas y verificar los niveles de agua de la alberca y su condición general.`,
+        en: `THE ADMINISTRATOR may carry out periodic inspections of the unit to verify the condition of the property, upon reasonable prior notice to the occupant when the unit is occupied. Such inspections shall be limited to checking appliances, detecting leaks, ensuring adequate ventilation of the unit, and, when applicable, watering plants and verifying pool water levels and general condition.`,
       }),
     },
 

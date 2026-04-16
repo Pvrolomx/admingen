@@ -23,6 +23,8 @@ const DEMO = {
     cl_exclusividad_venta: false,
     cl_condominio_areas: true,
     cl_limpieza: true,
+    cl_limpieza_logistica: true,
+    cl_limpieza_inspecciones: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -78,6 +80,8 @@ const INIT = {
     cl_exclusividad_venta: false,
     cl_condominio_areas: true,
     cl_limpieza: true,
+    cl_limpieza_logistica: true,
+    cl_limpieza_inspecciones: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -416,7 +420,9 @@ export default function AdminGenPage() {
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Servicios</p></div>
           <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={data.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
-          <Toggle label="Servicios de limpieza" sub="Limpieza ordinaria y extraordinaria, productos, personal" checked={data.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
+          <Toggle label="Servicios de limpieza" sub="Alcance: la cuota no incluye limpieza. Tipos: light/check-out/deep. Lógica deep→light" checked={data.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
+          <Toggle label="Limpieza — logística y tarifas" sub="Preaviso 7 días, emergencias con cargo, domingos/festivos doble tarifa, productos por cuenta del owner" checked={data.bloques.cl_limpieza_logistica} onChange={() => togBloque("cl_limpieza_logistica")} />
+          <Toggle label="Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={data.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} />
 
           {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Condominios</p></div>
