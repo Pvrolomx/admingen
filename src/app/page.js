@@ -445,7 +445,7 @@ export default function AdminGenPage() {
 
           <div className="mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Exclusividad</p></div>
           <Toggle label="Exclusividad de renta vacacional" sub="Derecho exclusivo de publicar en Airbnb, VRBO, Booking y medios digitales" checked={data.bloques.cl_exclusividad_renta} onChange={() => togBloque("cl_exclusividad_renta")} />
-          <Toggle label="Exclusividad de listing si decide vender" sub="Derecho de primera opción para listar en exclusiva por 90 días si el owner vende" checked={data.bloques.cl_exclusividad_venta} onChange={() => togBloque("cl_exclusividad_venta")} />
+          <Toggle label="Exclusividad de listing si decide vender" sub="Primera opción para listar en exclusiva 180 días. Cambio de agent durante ese periodo → terminación del contrato con 30 días de aviso." checked={data.bloques.cl_exclusividad_venta} onChange={() => togBloque("cl_exclusividad_venta")} />
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Servicios</p></div>
           <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={data.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
