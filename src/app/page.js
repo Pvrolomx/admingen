@@ -27,6 +27,7 @@ const DEMO = {
     cl_limpieza_inspecciones: true,
     cl_limpieza_personal: true,
     cl_asistencia_legal: true,
+    cl_rentas_cubren_gastos: true,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -86,6 +87,7 @@ const INIT = {
     cl_limpieza_inspecciones: true,
     cl_limpieza_personal: true,
     cl_asistencia_legal: true,
+    cl_rentas_cubren_gastos: false,
     cl_venta_propiedad: true,
     cl_facturas: false,
     cl_acceso_condominios: true,
@@ -451,6 +453,9 @@ export default function AdminGenPage() {
           <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
             <Toggle label="↳ Limpieza — personal contratado" sub="Owner/condominio que contrata directo asume responsabilidades laborales. Admin que contrata asume las suyas (Jalisco/Nayarit)" checked={data.bloques.cl_limpieza_personal} onChange={() => togBloque("cl_limpieza_personal")} disabled={!data.bloques.cl_limpieza} />
           </div>
+
+          <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">🏠 Rentas</p></div>
+          <Toggle label="Rentas cubren gastos" sub="Los ingresos por renta (vacacional o tradicional) se aplican primero a gastos, luego a cuota, y el remanente va al owner. Solo si Castle cobra las rentas." checked={data.bloques.cl_rentas_cubren_gastos} onChange={() => togBloque("cl_rentas_cubren_gastos")} />
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">⚖️ Valor agregado Castle Solutions</p></div>
           <Toggle label="Plus de asistencia legal" sub="Consultas breves sin costo sobre la propiedad (inmobiliario, condominal, migratorio, fiscal). Trámites mayores se negocian con estrategia y presupuesto." checked={data.bloques.cl_asistencia_legal} onChange={() => togBloque("cl_asistencia_legal")} />

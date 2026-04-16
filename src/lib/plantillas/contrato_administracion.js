@@ -378,6 +378,20 @@ const PLANTILLA_ADMINISTRACION = {
       }),
     },
 
+    // 3c.1 — USO DE RENTAS PARA CUBRIR GASTOS (cuando hay renta vacacional o tradicional)
+    {
+      id: 'cl_rentas_cubren_gastos',
+      condicional: true,
+      default: false,
+      etiqueta: 'Rentas cubren gastos',
+      etiqueta_en: 'Rental income covers expenses',
+      subtitulo: { es: 'c.1).- APLICACIÓN DE INGRESOS POR RENTAS A GASTOS DE LA PROPIEDAD', en: 'c.1).- APPLICATION OF RENTAL INCOME TO PROPERTY EXPENSES' },
+      render: (ctx) => ({
+        es: `Cuando LA PROPIEDAD genere ingresos por concepto de rentas, ya sean vacacionales de corta estancia o de arrendamiento tradicional, y dichos ingresos sean cobrados por conducto de EL ADMINISTRADOR, las partes convienen que tales ingresos serán aplicados en el siguiente orden de prelación: (i) en primer lugar, al pago de los gastos ordinarios de administración y mantenimiento de LA PROPIEDAD referidos en el inciso c) anterior; (ii) en segundo lugar, al pago de la cuota mensual de administración pactada con EL ADMINISTRADOR; y (iii) el remanente, si lo hubiera, será transferido a EL PROPIETARIO conforme al calendario y medio que las partes acuerden por escrito.\n\nEn caso de que los ingresos por rentas no sean suficientes para cubrir la totalidad de los gastos y cuota mensual, EL PROPIETARIO se obliga a completar el déficit mediante depósito bancario en la cuenta de gastos, en los términos establecidos en el inciso c) anterior. EL ADMINISTRADOR proporcionará a EL PROPIETARIO un estado de cuenta mensual detallando ingresos aplicados, gastos cubiertos y remanente o déficit, según corresponda.`,
+        en: `When THE PROPERTY generates rental income, whether short-term vacation rentals or traditional leasing, and such income is collected through THE ADMINISTRATOR, the parties agree that said income shall be applied in the following order of priority: (i) first, to the payment of ordinary administration and maintenance expenses of THE PROPERTY referred to in section c) above; (ii) second, to the payment of the monthly administration fee agreed with THE ADMINISTRATOR; and (iii) the remainder, if any, shall be transferred to THE OWNER according to the schedule and method agreed upon in writing by the parties.\n\nIn the event that rental income is insufficient to cover all expenses and the monthly fee, THE OWNER shall cover the deficit through bank deposit to the expenses account, under the terms established in section c) above. THE ADMINISTRATOR shall provide THE OWNER with a monthly statement detailing applied income, covered expenses, and remainder or deficit, as applicable.`,
+      }),
+    },
+
     // Venta de propiedad — condicional
     {
       id: 'cl_venta_propiedad',
