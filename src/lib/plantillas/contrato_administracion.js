@@ -602,8 +602,8 @@ const PLANTILLA_ADMINISTRACION = {
       siempre: true,
       render: (ctx) => ({
         firmas: [
-          { nombre: ctx.propietario.nombres, rol_es: ctx.propietario.clave === 'mp' || ctx.propietario.clave === 'fp' ? 'PROPIETARIOS / OWNERS' : 'PROPIETARIO / OWNER', rol_en: ctx.propietario.clave === 'mp' || ctx.propietario.clave === 'fp' ? 'OWNERS' : 'OWNER' },
-          { nombre: 'Claudia Rebeca Castillo Soto', rol_es: 'Representante legal / Legal Representative\nCASTLEBAY PV, SRL DE CV\nADMINISTRADORA / ADMINISTRATOR', rol_en: 'Legal representative\nCASTLEBAY PV, SRL DE CV\nADMINISTRATOR' },
+          { nombre: ctx.propietario.nombres, rol_es: ctx.propietario.clave === 'mp' || ctx.propietario.clave === 'fp' ? 'PROPIETARIOS / OWNERS' : 'PROPIETARIO / OWNER' },
+          { nombre: 'Claudia Rebeca Castillo Soto', rol_es: 'Representante legal / Legal Representative\nCASTLEBAY PV, SRL DE CV\nADMINISTRADORA / ADMINISTRATOR' },
         ],
         testigos: ctx.testigos?.incluir_testigos === true,
         aceptacion: ctx.testigos?.incluir_aceptacion === true,
