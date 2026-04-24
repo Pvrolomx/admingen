@@ -5,6 +5,7 @@ import { ensamblarContexto, renderizarBloques } from "@/lib/plantillas/ensamblad
 import PLANTILLA_CONTRATO from "@/lib/plantillas/contrato_administracion";
 import PLANTILLA_ADDENDUM from "@/lib/plantillas/addendum_personalizado";
 import { generarDocxBlob } from "@/lib/docx/generador";
+import { generarDocxAddendumBlob } from "@/lib/docx/generador_addendum";
 
 // Alias retro-compatible para el resto del código
 const PLANTILLA = PLANTILLA_CONTRATO;
@@ -324,11 +325,31 @@ export default function AdminGenPage() {
     if (!bloques.length) return;
     setGenerating(true);
     try {
-      const blob = await generarDocxBlob(bloques, plantillaActiva.meta, { logoBase64 });
       const nombre = datosActivos.partes.propietario.personas[0]?.nombre?.replace(/\s+/g, "_") || "OWNER";
-      const prefijo = modo === "addendum"
-        ? `ADDENDUM_${datosActivos.campos.propiedad?.addendum_numero || "1"}`
-        : "CONTRATO_ADMIN";
+      let blob;
+      let prefijo;
+
+      if (modo === "addendum") {
+        // Recolectar nombres de todos los propietarios para el header
+        const ownerNames = datosActivos.partes.propietario.personas
+          .map(p => p.nombre)
+          .filter(Boolean)
+          .join(" & ");
+        blob = await generarDocxAddendumBlob(bloques, plantillaActiva.meta, {
+          logoBase64,
+          datosExtras: {
+            addendum_numero: datosActivos.campos.propiedad?.addendum_numero || "1",
+            direccion: datosActivos.campos.propiedad?.direccion || "",
+            fecha_efectiva: datosActivos.campos.contrato_base?.fecha_efectiva || "",
+            owner_name: ownerNames,
+          },
+        });
+        prefijo = `ADDENDUM_${datosActivos.campos.propiedad?.addendum_numero || "1"}`;
+      } else {
+        blob = await generarDocxBlob(bloques, plantillaActiva.meta, { logoBase64 });
+        prefijo = "CONTRATO_ADMIN";
+      }
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = `${prefijo}_${nombre}.docx`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -338,7 +359,7 @@ export default function AdminGenPage() {
       alert("Error al generar el documento. Revisa la consola.");
     }
     setGenerating(false);
-  }, [bloques, datosActivos.partes.propietario.personas, plantillaActiva, modo, datosActivos.campos.propiedad, logoBase64]);
+  }, [bloques, datosActivos, plantillaActiva, modo, logoBase64]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
