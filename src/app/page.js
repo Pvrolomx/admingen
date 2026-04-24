@@ -2,8 +2,18 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { ensamblarContexto, renderizarBloques } from "@/lib/plantillas/ensamblador";
-import PLANTILLA from "@/lib/plantillas/contrato_administracion";
+import PLANTILLA_CONTRATO from "@/lib/plantillas/contrato_administracion";
+import PLANTILLA_ADDENDUM from "@/lib/plantillas/addendum_personalizado";
 import { generarDocxBlob } from "@/lib/docx/generador";
+
+// Alias retro-compatible para el resto del código
+const PLANTILLA = PLANTILLA_CONTRATO;
+
+// Mapa de plantillas disponibles
+const PLANTILLAS = {
+  contrato: PLANTILLA_CONTRATO,
+  addendum: PLANTILLA_ADDENDUM,
+};
 
 // ============================================================
 // DEMO DATA (Herbert Sears → La Jolla de Mismaloya)
@@ -122,6 +132,32 @@ const INIT = {
 };
 
 // ============================================================
+// INIT DATA — ADDENDUM (modo 'addendum')
+// ============================================================
+const INIT_ADDENDUM = {
+  partes: {
+    propietario: {
+      personas: [{ nombre: "", genero: "M" }],
+      tipoPersona: "fisica",
+      email: "",
+      celular: "",
+    },
+  },
+  bloques: {
+    ad_memoria_cambios: false,
+    ad_contractors_terceros: false,
+    ad_acceso_terceros: false,
+  },
+  campos: {
+    propiedad: { direccion: "" },
+    contrato_base: { fecha_contrato: "", fecha_contrato_en: "" },
+    fechas: { ciudad_firma: "pv" },
+    umbrales: { umbral_confirmacion: 500 },
+    testigos: { incluir_testigos: false, incluir_aceptacion: false },
+  },
+};
+
+// ============================================================
 // HELPERS
 // ============================================================
 function ensamblar(data) {
@@ -188,12 +224,29 @@ function Section({ title, children }) {
 // MAIN APP
 // ============================================================
 export default function AdminGenPage() {
+  const [modo, setModo] = useState("contrato"); // 'contrato' | 'addendum'
   const [data, setData] = useState(INIT);
+  const [dataAddendum, setDataAddendum] = useState(INIT_ADDENDUM);
   const [step, setStep] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [logoBase64, setLogoBase64] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
-  const steps = ["Propietario", "Propiedad", "Honorarios", "Cláusulas", "Preview"];
+
+  // Plantilla activa según el modo
+  const plantillaActiva = modo === "addendum" ? PLANTILLA_ADDENDUM : PLANTILLA_CONTRATO;
+  const datosActivos = modo === "addendum" ? dataAddendum : data;
+  const setDatosActivos = modo === "addendum" ? setDataAddendum : setData;
+
+  const steps = modo === "addendum"
+    ? ["Propietario", "Referencia", "Cláusulas", "Preview"]
+    : ["Propietario", "Propiedad", "Honorarios", "Cláusulas", "Preview"];
+
+  // Al cambiar modo, reset step a 0
+  const cambiarModo = (nuevoModo) => {
+    if (nuevoModo === modo) return;
+    setModo(nuevoModo);
+    setStep(0);
+  };
 
   // Auto-save draft
   useEffect(() => {
@@ -307,6 +360,22 @@ export default function AdminGenPage() {
           )}
           <button onClick={resetAll} className="px-3 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 transition">Limpiar</button>
         </div>
+      </div>
+
+      {/* Tab switcher: Contrato / Addendum */}
+      <div className="flex gap-2 mb-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+        <button
+          onClick={() => cambiarModo("contrato")}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${modo === "contrato" ? "bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-300 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700"}`}
+        >
+          📄 Contrato de Administración
+        </button>
+        <button
+          onClick={() => cambiarModo("addendum")}
+          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${modo === "addendum" ? "bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-300 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700"}`}
+        >
+          📋 Addendum Personalizado
+        </button>
       </div>
 
       {/* Stepper */}

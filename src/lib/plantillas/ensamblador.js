@@ -144,6 +144,28 @@ export function ensamblarContexto(plantilla, datos) {
   ctx.testigos = datos.campos?.testigos || { incluir_testigos: false, incluir_aceptacion: false };
 
   // ============================================================
+  // CAMPOS ESPECÍFICOS DE ADDENDUM (si aplican)
+  // ============================================================
+
+  // Umbrales usados por cláusulas de addendum
+  const umbralConf = datos.campos?.umbrales?.umbral_confirmacion ?? 500;
+  ctx.umbral_confirmacion = umbralConf;
+  ctx.umbral_confirmacion_palabras = montoALetras(umbralConf, datos.campos?.precio?.moneda || 'USD');
+  ctx.umbral_confirmacion_palabras_en = ''; // placeholder; si se necesita, agregamos función EN dedicada
+
+  // Referencia al contrato principal (addendum)
+  ctx.fecha_contrato = datos.campos?.contrato_base?.fecha_contrato || '';
+  ctx.fecha_contrato_en = datos.campos?.contrato_base?.fecha_contrato_en || datos.campos?.contrato_base?.fecha_contrato || '';
+
+  // Ciudad de firma del addendum
+  ctx.ciudad_firma = datos.campos?.fechas?.ciudad_firma || 'pv';
+
+  // Fechas larga del día actual (para preámbulo del addendum)
+  const hoy = new Date();
+  ctx.fecha_larga_es = fechaEs(hoy.toISOString().slice(0, 10));
+  ctx.fecha_larga_en = fechaEn(hoy.toISOString().slice(0, 10));
+
+  // ============================================================
   // 5. RESOLVER FECHAS
   // ============================================================
 
