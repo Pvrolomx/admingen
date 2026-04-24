@@ -6,44 +6,35 @@
  * y lo modifica/precisa para acomodar circunstancias específicas de
  * ciertos propietarios.
  *
- * Casos de uso típicos:
- *   - Owners de memoria volátil (requieren confirmaciones escritas)
- *   - Owners ausentes largas temporadas (régimen de visitas preventivas)
- *   - Owners que contratan directamente a sus propios proveedores
- *   - Owners con requisitos de seguridad específicos (acceso restringido)
- *   - Owners cuyos emails informales requieren canal formal
- *   - Owners que traen huracanes sin estar presentes (checklist de cierre)
- *   - Owners cuyas visitas de cortesía del admin requieren autorización expresa
- *   - Owners que acumulan pendientes durante ausencia (lista pre-temporada)
+ * ESTILO: Las cláusulas están redactadas en tono conversacional directo
+ * (siguiendo el estilo del Addendum No. 1 Brenda Maxwell / Villa Magna
+ * escrito por Claudia en abril 2026). El tono es deliberadamente no-legalista
+ * porque el público objetivo son dueños extranjeros que NECESITAN leer y
+ * entender antes de firmar. La fuerza legal está en:
+ *   - Citas textuales de emails previos del owner
+ *   - Cajas de advertencia ⚠️ con deslindes explícitos
+ *   - Obligación de firmar (= aceptación clara, no silenciosa)
  *
- * Cada cláusula es toggleable — se activan solo las que aplican al cliente.
+ * FORMATO: EN principal + nota ES al inicio indicando que la versión en
+ * inglés prevalece. Los owners son extranjeros que leen inglés.
  *
- * Versión 1.0.0 — MVP con 3 cláusulas piloto (memoria, contractors, acceso).
- * Las 5 restantes se agregan en commits siguientes.
+ * Versión 2.0.0 — Reescrita completa post análisis del caso Brenda.
  */
 
 const PLANTILLA_ADDENDUM = {
 
-  // ============================================================
-  // META
-  // ============================================================
-
   meta: {
     id: 'addendum_personalizado',
-    version: '1.0.0',
+    version: '2.0.0',
     nombre: 'Addendum al Contrato de Administración',
-    nombre_en: 'Addendum to Administration Agreement',
-    idiomas: ['es', 'en'],
-    formato: 'bilingue_tabla',
+    nombre_en: 'Addendum to Property Management Contract',
+    idiomas: ['en'],
+    formato: 'monolingue_en',
     nota_idioma: {
-      es: 'La traducción al idioma inglés es mera cortesía. En el evento de una controversia, la versión en español prevalecerá.',
-      en: 'The translation to English is mere courtesy. In the event of a controversy, the Spanish version will prevail.',
+      es: 'Este addendum se redacta en inglés como idioma principal por ser el lenguaje de trabajo con el propietario. La versión en inglés prevalecerá en caso de cualquier controversia.',
+      en: 'This addendum is drafted in English as the primary language, being the working language with the owner. The English version shall prevail in case of any controversy.',
     },
   },
-
-  // ============================================================
-  // PARTES — mismas que el contrato principal
-  // ============================================================
 
   partes: [
     {
@@ -58,7 +49,6 @@ const PLANTILLA_ADDENDUM = {
         { id: 'nombre', tipo: 'texto', requerido: true, etiqueta: 'Nombre completo', etiqueta_en: 'Full name' },
         { id: 'genero', tipo: 'select', requerido: true, etiqueta: 'Género', opciones: [{ valor: 'M', texto: 'Masculino' }, { valor: 'F', texto: 'Femenino' }] },
         { id: 'email', tipo: 'email', requerido: true, etiqueta: 'Correo electrónico', etiqueta_en: 'Email' },
-        { id: 'celular', tipo: 'tel', requerido: false, etiqueta: 'Celular / WhatsApp', etiqueta_en: 'Cell / WhatsApp' },
       ],
     },
     {
@@ -81,106 +71,267 @@ const PLANTILLA_ADDENDUM = {
     },
   ],
 
-  // ============================================================
-  // CAMPOS ESPECÍFICOS DEL ADDENDUM
-  // ============================================================
-
   campos: {
     propiedad: {
       etiqueta: 'Datos de la propiedad',
       etiqueta_en: 'Property data',
       campos: [
-        { id: 'direccion', tipo: 'textarea', requerido: true, etiqueta: 'Dirección completa de la propiedad', etiqueta_en: 'Full property address' },
+        { id: 'direccion', tipo: 'textarea', requerido: true, etiqueta: 'Dirección completa de la propiedad', etiqueta_en: 'Full property address', placeholder: 'ej. Villa Magna 352A & 352B, Puerto Vallarta, Jalisco' },
+        { id: 'addendum_numero', tipo: 'texto', requerido: true, etiqueta: 'Número de addendum', etiqueta_en: 'Addendum number', default: '1', placeholder: '1' },
       ],
     },
     contrato_base: {
       etiqueta: 'Referencia al contrato principal',
       etiqueta_en: 'Reference to main contract',
       campos: [
-        { id: 'fecha_contrato', tipo: 'texto', requerido: true, etiqueta: 'Fecha del contrato principal', etiqueta_en: 'Date of main contract', placeholder: 'ej. 15 de abril de 2026' },
-        { id: 'fecha_contrato_en', tipo: 'texto', requerido: false, etiqueta: 'Fecha (EN)', etiqueta_en: 'Date (EN)', placeholder: 'ej. April 15, 2026' },
-      ],
-    },
-    fechas: {
-      etiqueta: 'Fecha del addendum',
-      etiqueta_en: 'Addendum date',
-      campos: [
-        { id: 'ciudad_firma', tipo: 'select', requerido: true, etiqueta: 'Ciudad de firma', opciones: [
-          { valor: 'pv', texto: 'Puerto Vallarta, Jalisco' },
-          { valor: 'nv', texto: 'Nuevo Vallarta, Nayarit' },
-        ], default: 'pv' },
-      ],
-    },
-    umbrales: {
-      etiqueta: 'Umbrales (opcional, para algunas cláusulas)',
-      etiqueta_en: 'Thresholds (optional, for certain clauses)',
-      campos: [
-        { id: 'umbral_confirmacion', tipo: 'numero', requerido: false, etiqueta: 'Umbral confirmación escrita (USD)', etiqueta_en: 'Written confirmation threshold (USD)', default: 500 },
+        { id: 'fecha_contrato', tipo: 'texto', requerido: true, etiqueta: 'Fecha del contrato principal (EN)', etiqueta_en: 'Date of main contract', placeholder: 'ej. April 15, 2026' },
+        { id: 'fecha_efectiva', tipo: 'texto', requerido: true, etiqueta: 'Fecha efectiva del addendum', etiqueta_en: 'Addendum effective date', placeholder: 'ej. April 23, 2026' },
       ],
     },
   },
 
-  // ============================================================
-  // BLOQUES (cláusulas del addendum)
-  // ============================================================
-
   bloques: [
 
-    // PREÁMBULO — Siempre presente
+    // ENCABEZADO
     {
-      id: 'preambulo',
+      id: 'encabezado',
       siempre: true,
-      tipo: 'preambulo',
+      tipo: 'encabezado_addendum',
       render: (ctx) => ({
-        es: `En la ciudad de ${ctx.ciudad_firma === 'nv' ? 'Nuevo Vallarta, Nayarit' : 'Puerto Vallarta, Jalisco'}, el día ${ctx.fecha_larga_es || '___'}, comparecen por una parte EL PROPIETARIO, representado por ${ctx.propietario.nombres}, y por la otra parte EL ADMINISTRADOR, CASTLEBAY PV, SRL DE CV, representada por su Representante legal Claudia Rebeca Castillo Soto, quienes acuerdan suscribir el presente ADDENDUM al Contrato de Administración y Mantenimiento de fecha ${ctx.fecha_contrato || '___'} (en adelante "EL CONTRATO PRINCIPAL"), con el fin de puntualizar y formalizar determinados acuerdos específicos aplicables a LA PROPIEDAD materia del mismo.\n\nEste ADDENDUM forma parte integrante de EL CONTRATO PRINCIPAL. En lo no previsto expresamente en este documento, continuarán aplicando íntegramente las disposiciones de EL CONTRATO PRINCIPAL. En caso de contradicción entre ambos documentos, prevalecerá lo dispuesto en este ADDENDUM por ser acuerdo posterior y específico.`,
-        en: `In the city of ${ctx.ciudad_firma === 'nv' ? 'Nuevo Vallarta, Nayarit' : 'Puerto Vallarta, Jalisco'}, on ${ctx.fecha_larga_en || '___'}, appearing on one side THE OWNER, represented by ${ctx.propietario.nombres}, and on the other side THE ADMINISTRATOR, CASTLEBAY PV, SRL DE CV, represented by its Legal Representative Claudia Rebeca Castillo Soto, who agree to subscribe to this ADDENDUM to the Property Management and Maintenance Contract dated ${ctx.fecha_contrato_en || ctx.fecha_contrato || '___'} (hereinafter "THE MAIN CONTRACT"), for the purpose of specifying and formalizing certain specific agreements applicable to THE PROPERTY subject to said contract.\n\nThis ADDENDUM is an integral part of THE MAIN CONTRACT. In all matters not expressly provided for in this document, the provisions of THE MAIN CONTRACT shall continue to apply in their entirety. In case of contradiction between both documents, the provisions of this ADDENDUM shall prevail as a subsequent and specific agreement.`,
+        en: `This document adds to and updates the existing Property Management and Maintenance Contract between the parties listed above, dated ${ctx.fecha_contrato || '___'}. Everything in the original contract still applies — this Addendum only adds new agreements and clarifications. Both parties sign below to confirm they have read and agreed to all points.`,
+        es: '',
       }),
     },
 
-    // CLÁUSULAS — todas condicionales toggleables
-
-    // I — MEMORIA E INSTRUCCIONES CAMBIANTES (confirmación escrita)
+    // I — Instrucciones de limpieza override
     {
-      id: 'ad_memoria_cambios',
+      id: 'ad_instrucciones_limpieza',
       condicional: true,
       default: false,
-      etiqueta: 'Instrucciones cambiantes — confirmación escrita',
-      etiqueta_en: 'Changing instructions — written confirmation',
-      numero_romano: 'I',
-      subtitulo: { es: 'PRIMERA.- CONFIRMACIÓN ESCRITA DE INSTRUCCIONES', en: 'FIRST.- WRITTEN CONFIRMATION OF INSTRUCTIONS' },
+      etiqueta: '⚠️ Instrucciones de limpieza del owner → deslinde',
+      etiqueta_en: 'Cleaning instructions override',
+      tipo: 'clausula_addendum',
       render: (ctx) => ({
-        es: `Las partes reconocen que la administración eficiente de LA PROPIEDAD requiere claridad y estabilidad en las instrucciones que EL PROPIETARIO comunica a EL ADMINISTRADOR. En consecuencia, las partes convienen lo siguiente:\n\n(i) Toda instrucción de EL PROPIETARIO que implique gastos, compras, contratación de terceros u obras por monto superior a $${ctx.umbral_confirmacion || 500} USD (${ctx.umbral_confirmacion_palabras || 'quinientos dólares americanos'}), deberá ser confirmada por escrito por correo electrónico antes de su ejecución.\n\n(ii) EL ADMINISTRADOR queda expresamente facultado para diferir la ejecución de cualquier instrucción hasta contar con dicha confirmación escrita, sin que ello genere responsabilidad alguna por demora, pérdida de oportunidad o daño derivado.\n\n(iii) Cuando EL PROPIETARIO modifique una instrucción previamente comunicada, la instrucción vigente será la más reciente confirmada por escrito. EL ADMINISTRADOR no será responsable de ejecuciones basadas en instrucciones posteriormente modificadas cuando dicha modificación no le haya sido comunicada con antelación razonable.\n\n(iv) EL ADMINISTRADOR llevará un registro cronológico de las instrucciones recibidas, su confirmación y su ejecución, el cual podrá ser consultado por EL PROPIETARIO en cualquier momento.`,
-        en: `The parties recognize that the efficient administration of THE PROPERTY requires clarity and stability in the instructions that THE OWNER communicates to THE ADMINISTRATOR. Accordingly, the parties agree as follows:\n\n(i) Any instruction from THE OWNER involving expenses, purchases, contracting of third parties, or works for an amount exceeding $${ctx.umbral_confirmacion || 500} USD (${ctx.umbral_confirmacion_palabras_en || 'five hundred US dollars'}), must be confirmed in writing via email prior to its execution.\n\n(ii) THE ADMINISTRATOR is expressly authorized to defer the execution of any instruction until such written confirmation is obtained, without generating any liability for delay, loss of opportunity, or derivative damage.\n\n(iii) When THE OWNER modifies a previously communicated instruction, the prevailing instruction shall be the most recent one confirmed in writing. THE ADMINISTRATOR shall not be liable for executions based on instructions that were subsequently modified when such modification was not communicated with reasonable advance notice.\n\n(iv) THE ADMINISTRATOR shall maintain a chronological record of received instructions, their confirmation, and their execution, which may be consulted by THE OWNER at any time.`,
+        en: `**If You Tell Us How to Clean — We're Not Responsible for the Results**
+
+Our contract (Sections 3a and b.1) gives Castle Solutions the right to decide how cleaning and maintenance work gets done. That means choosing the right tools, products, and methods based on what actually works best for the property.
+
+When the owner sends specific instructions about how our team should carry out cleaning or maintenance work, we're happy to follow them as a courtesy, but we need to be clear about one thing:
+
+⚠️ **If you tell us to do something a specific way and it causes damage or a bad result, that's on you — not on us.**
+
+Examples of the kind of instructions this covers include:
+
+• Specifying cleaning tools (e.g., "only a Swiffer, no mop")
+• Dictating how to organize cupboards, linens, and supplies inside the units
+• Requiring specific folding, placement, or arrangement of textiles and fabrics
+• Requests for specific cleaning products that are not provided by the owner, as required by the contract
+
+We'll keep doing our best to accommodate reasonable preferences. But when you override our professional judgment in writing, you take on the responsibility for the outcome.`,
+        es: '',
       }),
     },
 
-    // II — CONTRATISTAS DE TERCEROS (deslinde)
+    // II — Cambios internos del equipo
+    {
+      id: 'ad_cambios_equipo',
+      condicional: true,
+      default: false,
+      etiqueta: 'Cambios internos en el equipo Castle',
+      etiqueta_en: 'Internal team changes',
+      tipo: 'clausula_addendum',
+      render: (ctx) => ({
+        en: `**Changes Inside Our Team**
+
+We want to officially let you know about two important changes at Castle Solutions that affect how your property is managed:
+
+**Miranda Santos is now Operations Manager.** This is a promotion — Miranda now oversees our entire housekeeping and operations team. She's no longer available as a personal, on-call cleaning person for individual units. Your property will still be cleaned and inspected regularly, but by our team under Miranda's supervision, not by Miranda personally on request.
+
+**Claudia is no longer doing field work.** Claudia's role is now focused on managing contracts, client relationships, and the business side of things. She won't be showing up personally for routine cleanings, deliveries, or maintenance visits unless there's a real emergency or a specific reason tied to the contract.
+
+What this means for you: if you send a message asking Miranda or Claudia to personally do something at a specific time, we can't always guarantee that. Our team handles the work — Miranda makes sure it's done right.`,
+        es: '',
+      }),
+    },
+
+    // III — Restricciones de acceso
+    {
+      id: 'ad_restriccion_acceso',
+      condicional: true,
+      default: false,
+      etiqueta: '⚠️ Restricciones de acceso → deslinde',
+      etiqueta_en: 'Access restrictions → liability release',
+      tipo: 'clausula_addendum',
+      render: (ctx) => ({
+        en: `**About Restricting Who Can Enter the Unit**
+
+When the owner asks us to limit who has access to the unit — for example, telling us that only specific named individuals can know the codes or enter — we understand where it's coming from. Security concerns and peace of mind are legitimate reasons to want tight control over access.
+
+But we need to be honest with you about three consequences of that approach:
+
+• **It creates a gap in emergency coverage.** If the authorized person is on vacation or unavailable, and something goes wrong in the unit — a burst pipe, a leak from upstairs, an electrical problem — there would be nobody authorized to go in and deal with it. Our contract (Section 3a) requires us to be able to respond within 24 hours in an emergency. That's impossible if access is too narrowly restricted.
+
+• **It shifts the responsibility to you.** If we can't get in because of your restrictions, and something gets damaged as a result, we are not responsible for that damage. By signing this Addendum, you acknowledge and accept that.
+
+• **It affects routine service.** Weekly supervision visits included in your monthly fee require that someone from our team can enter the unit. Limiting that to only one or two people makes it very difficult to maintain that service reliably.
+
+Any high-value items inside the unit should be reported to your contents insurance separately — Castle Solutions does not insure personal property.
+
+⚠️ **If your access restrictions prevent us from doing our job — including responding to emergencies — Castle Solutions is not responsible for any damage or loss that results.**`,
+        es: '',
+      }),
+    },
+
+    // IV — Ausencia prolongada + riesgos del clima PV
+    {
+      id: 'ad_ausencia_prolongada',
+      condicional: true,
+      default: false,
+      etiqueta: '⚠️ Ausencia prolongada + riesgos del clima PV',
+      etiqueta_en: 'Prolonged absence + PV climate risks',
+      tipo: 'clausula_addendum',
+      render: (ctx) => ({
+        en: `**What Happens to the Unit While You're Gone**
+
+When the owner confirms the unit will be empty for an extended period (typically 3 to 6 months), we want to be completely honest about what that means for properties in Puerto Vallarta, because this is important.
+
+PV is a beautiful place — but it's also hot, extremely humid (80–95% humidity most of the time), full of salt in the air from the ocean, and June through October is full-on rainy and hurricane season. Empty properties in this climate get damaged fast if nobody's keeping an eye on them. Here's what can happen:
+
+• **Mold.** This is the big one. Mold can start growing within 24–48 hours in a closed, humid unit. By the time you come back, it can be on the walls, the ceiling, inside the cupboards, on mattresses, on furniture, and on linens. It's expensive to fix and a health hazard.
+
+• **Bugs and rodents.** Cockroaches, ants, silverfish, and mice are common in empty coastal units. They get into linens, stored food, and furniture.
+
+• **Appliances.** Fridges, AC units, water heaters, and washing machines need to run occasionally. If they sit completely unused for 5–6 months in this climate, seals degrade, coils get moldy, and motors can burn out.
+
+• **Salt air corrosion.** Everything metal rusts faster here than anywhere else — hinges, locks, window tracks, appliance parts. Ocean-facing buildings get it worse.
+
+• **Plumbing.** The U-shaped traps under sinks and drains dry out in empty units, which lets sewer gases into the apartment. Rubber seals also degrade faster in the heat.
+
+• **Water damage you don't know about.** Leaks from the unit above, roof seepage during heavy rains, or condensation buildup can go unnoticed for weeks without someone physically checking.
+
+• **Electrical issues.** Humidity gets into outlets and panels. Things left plugged in during power surges can create fire risks.
+
+None of this is meant to scare you — it's just the reality of this climate. The good news is that regular visits and a light cleaning every few weeks prevent most of these problems completely.
+
+⚠️ **If you limit our access and we can't do the weekly visits, we can't be responsible for what happens to the unit while you're away.**`,
+        es: '',
+      }),
+    },
+
+    // V — Protocolo de rentas + terminación por subarriendo
+    {
+      id: 'ad_protocolo_rentas',
+      condicional: true,
+      default: false,
+      etiqueta: '⚠️ Protocolo de rentas + terminación por subarriendo',
+      etiqueta_en: 'Rentals protocol + sublet termination',
+      tipo: 'clausula_addendum',
+      render: (ctx) => ({
+        en: `**How Rentals Work Going Forward**
+
+We want to make sure everyone is on the same page about what Castle Solutions does — and doesn't do — when it comes to renters. Here's how it works:
+
+**We'll get the apartment ready.** Before any renter arrives, we make sure the unit is clean and in good condition. That's our job and we'll do it well.
+
+**All communication with renters goes through you.** Castle Solutions will not communicate directly with renters. Any instructions, rules, or messages for them come from you, the owner. If a renter has a question or request, it goes to you first and you let us know what you'd like us to do.
+
+**No in-person check-in or check-out.** We won't be doing in-person arrivals or departures with renters. Access will be handled through the key box or digital lock as usual. If there's an issue at check-in or check-out, the renter contacts you.
+
+**Electricity gets measured.** We will read the electricity meter at the start and end of each rental period, and the consumption during the rental will be charged to the renter or deducted from their deposit, as coordinated with you.
+
+⚠️ **Important: If a third party — meaning anyone who is not the owner — tries to rent or sublet the unit without Castle Solutions managing the rental through this contract, this contract is terminated immediately, without notice.**
+
+To be clear: renters go through us, booked by you through Castle Solutions. If someone is staying in the unit under an arrangement Castle Solutions doesn't know about and isn't managing, that's a breach of contract and the agreement ends on the spot.`,
+        es: '',
+      }),
+    },
+
+    // VI — Trabajo de contratistas externos
     {
       id: 'ad_contractors_terceros',
       condicional: true,
       default: false,
-      etiqueta: 'Contratistas de terceros — deslinde',
-      etiqueta_en: 'Third-party contractors — release',
-      numero_romano: 'II',
-      subtitulo: { es: 'SEGUNDA.- CONTRATISTAS Y PROVEEDORES DE TERCEROS', en: 'SECOND.- THIRD-PARTY CONTRACTORS AND PROVIDERS' },
+      etiqueta: '⚠️ Trabajo de contratistas externos → deslinde',
+      etiqueta_en: 'Third-party work → liability release',
+      tipo: 'clausula_addendum',
       render: (ctx) => ({
-        es: `Las partes reconocen que EL PROPIETARIO podrá, por su propia iniciativa y cuenta, contratar directamente contratistas, proveedores o prestadores de servicios ajenos a la red de proveedores verificados por EL ADMINISTRADOR (en adelante "CONTRATISTAS DE TERCEROS"). En tal supuesto:\n\n(i) La selección, vetting, supervisión y pago de los CONTRATISTAS DE TERCEROS será responsabilidad exclusiva de EL PROPIETARIO. EL ADMINISTRADOR no asume obligación alguna de verificación, supervisión, garantía o aseguramiento respecto de su trabajo.\n\n(ii) EL ADMINISTRADOR queda liberado de toda responsabilidad por daños, defectos, pérdidas, robos, accidentes laborales, incumplimientos, vicios ocultos o cualquier otra consecuencia derivada del trabajo de CONTRATISTAS DE TERCEROS en LA PROPIEDAD.\n\n(iii) No obstante lo anterior, EL ADMINISTRADOR, como cortesía profesional y dentro de sus posibilidades operativas, podrá facilitar el acceso a LA PROPIEDAD y apoyar la comunicación entre EL PROPIETARIO y los CONTRATISTAS DE TERCEROS, sin que tal apoyo genere responsabilidad alguna.\n\n(iv) EL PROPIETARIO se obliga a informar previamente a EL ADMINISTRADOR de la identidad del CONTRATISTA DE TERCEROS, las fechas de intervención y el alcance de los trabajos, con el único propósito de coordinar el acceso y evitar conflictos con los servicios regulares de LA PROPIEDAD.\n\n(v) EL PROPIETARIO se obliga expresamente a sacar en paz y a salvo a EL ADMINISTRADOR de cualquier reclamación, daño, demanda o responsabilidad que terceros pudieran ejercer en relación con el trabajo de los CONTRATISTAS DE TERCEROS.`,
-        en: `The parties recognize that THE OWNER may, at their own initiative and expense, directly hire contractors, suppliers, or service providers outside the network of verified providers of THE ADMINISTRATOR (hereinafter "THIRD-PARTY CONTRACTORS"). In such case:\n\n(i) The selection, vetting, supervision, and payment of THIRD-PARTY CONTRACTORS shall be the exclusive responsibility of THE OWNER. THE ADMINISTRATOR assumes no obligation of verification, supervision, guarantee, or insurance regarding their work.\n\n(ii) THE ADMINISTRATOR is released from all liability for damages, defects, losses, theft, labor accidents, breaches, hidden defects, or any other consequence derived from the work of THIRD-PARTY CONTRACTORS at THE PROPERTY.\n\n(iii) Notwithstanding the foregoing, THE ADMINISTRATOR, as a professional courtesy and within operational possibilities, may facilitate access to THE PROPERTY and support communication between THE OWNER and the THIRD-PARTY CONTRACTORS, without such support generating any liability.\n\n(iv) THE OWNER agrees to inform THE ADMINISTRATOR in advance of the identity of the THIRD-PARTY CONTRACTOR, the dates of intervention, and the scope of the work, for the sole purpose of coordinating access and avoiding conflicts with regular services at THE PROPERTY.\n\n(v) THE OWNER expressly agrees to hold harmless THE ADMINISTRATOR from any claim, damage, lawsuit, or liability that third parties may exercise in relation to the work of THIRD-PARTY CONTRACTORS.`,
+        en: `**Work We Did Not Arrange — Not Our Responsibility**
+
+Castle Solutions is only responsible for work that we arranged, supervised, or authorized on your behalf. That means:
+
+• **If you hire someone directly** without going through us, we have no involvement in that work — not in how it's done, not in the result, and not in fixing it if something goes wrong.
+
+• **If a contractor you found or contacted** does work in the unit, any warranty, guarantee, or follow-up on that work is between you and them. Castle Solutions is not part of that.
+
+• **If something breaks or doesn't work right** after work that we didn't coordinate, we're not responsible for repairing it, paying for it, or managing the follow-up with the contractor.
+
+This applies the other way too: if we coordinate a repair on your behalf and the contractor gives a warranty, we'll pass that along to you. But the warranty is between you and them — Castle Solutions does not guarantee third-party work quality, only that we verified the work was performed as instructed.
+
+⚠️ **Castle Solutions is not liable for any work, repairs, or installations done by contractors not hired or supervised by us — regardless of when the work happened or who recommended them.**`,
+        es: '',
       }),
     },
 
-    // III — ACCESO DE TERCEROS A LA PROPIEDAD
+    // VII — Instrucciones cambiantes / confirmación escrita
     {
-      id: 'ad_acceso_terceros',
+      id: 'ad_instrucciones_cambiantes',
       condicional: true,
       default: false,
-      etiqueta: 'Acceso nominativo de terceros',
-      etiqueta_en: 'Named access of third parties',
-      numero_romano: 'III',
-      subtitulo: { es: 'TERCERA.- AUTORIZACIÓN DE ACCESO A TERCEROS', en: 'THIRD.- AUTHORIZATION OF ACCESS TO THIRD PARTIES' },
+      etiqueta: 'Instrucciones cambiantes → confirmación escrita',
+      etiqueta_en: 'Changing instructions → written confirmation',
+      tipo: 'clausula_addendum',
       render: (ctx) => ({
-        es: `Las partes convienen un régimen estricto de acceso a LA PROPIEDAD por personas distintas a EL PROPIETARIO y al personal autorizado de EL ADMINISTRADOR, en los siguientes términos:\n\n(i) EL PROPIETARIO comunicará a EL ADMINISTRADOR, por escrito y de forma nominativa, la lista de personas autorizadas a ingresar a LA PROPIEDAD durante la ausencia de EL PROPIETARIO, señalando nombre completo, relación con EL PROPIETARIO, y alcance/duración de la autorización.\n\n(ii) EL ADMINISTRADOR no permitirá el acceso a LA PROPIEDAD a persona alguna no incluida expresamente en dicha lista, salvo en caso de emergencia (incendio, inundación, alerta de condominio, intervención de autoridad) en los que actuará conforme al mejor interés de la preservación de LA PROPIEDAD y documentará las circunstancias.\n\n(iii) Cualquier modificación a la lista de personas autorizadas deberá constar por escrito enviado por correo electrónico de EL PROPIETARIO a EL ADMINISTRADOR, con al menos 24 (veinticuatro) horas de anticipación cuando sea posible.\n\n(iv) EL ADMINISTRADOR llevará registro de cada acceso autorizado con la fecha, hora de entrada y salida, y propósito declarado de la visita, a disposición de EL PROPIETARIO en cualquier momento.\n\n(v) EL PROPIETARIO reconoce que el incumplimiento de este protocolo por parte de personas que él mismo haya referido libera a EL ADMINISTRADOR de responsabilidad por cualquier consecuencia derivada de dicho incumplimiento.`,
-        en: `The parties agree on a strict access regime to THE PROPERTY by persons other than THE OWNER and the authorized personnel of THE ADMINISTRATOR, in the following terms:\n\n(i) THE OWNER shall communicate to THE ADMINISTRATOR, in writing and by name, the list of persons authorized to enter THE PROPERTY during THE OWNER'S absence, indicating full name, relationship to THE OWNER, and scope/duration of authorization.\n\n(ii) THE ADMINISTRATOR shall not allow access to THE PROPERTY to any person not expressly included in said list, except in case of emergency (fire, flood, condominium alert, authority intervention) in which THE ADMINISTRATOR shall act in the best interest of preserving THE PROPERTY and shall document the circumstances.\n\n(iii) Any modification to the list of authorized persons must be in writing sent via email from THE OWNER to THE ADMINISTRATOR, with at least 24 (twenty-four) hours of advance notice when possible.\n\n(iv) THE ADMINISTRATOR shall maintain a record of each authorized access with the date, time of entry and exit, and stated purpose of the visit, available to THE OWNER at any time.\n\n(v) THE OWNER acknowledges that non-compliance with this protocol by persons referred by THE OWNER releases THE ADMINISTRATOR from liability for any consequence derived from such non-compliance.`,
+        en: `**When Instructions Change — We Need Them in Writing**
+
+Managing a property well requires clarity about what the owner actually wants done. When instructions change frequently or get sent through multiple channels (email, text, voice messages), we run the risk of acting on outdated information, and that wastes money and time for everyone.
+
+To keep things clean going forward, here's how we'll handle instructions that involve spending money or hiring people:
+
+• **Any instruction that means spending money, buying something, hiring a contractor, or doing work for more than a few hundred dollars needs to be confirmed by email before we act on it.** This protects both of us — you don't get surprised by charges, and we don't end up executing something you later changed your mind about.
+
+• **If you send us a new instruction that contradicts an earlier one, the most recent written instruction wins.** We can't be expected to guess which version is current.
+
+• **We can pause execution until we get the written confirmation.** If we're waiting on that confirmation and something gets delayed, that's not on us.
+
+• **We keep a log of what we received and what we executed.** You can ask to see it anytime.
+
+This isn't about being rigid — it's about not wasting your money or ours when directions change mid-stream.`,
+        es: '',
+      }),
+    },
+
+    // VIII — Lista maestra pre-temporada
+    {
+      id: 'ad_master_list_preseason',
+      condicional: true,
+      default: false,
+      etiqueta: 'Lista maestra pre-temporada',
+      etiqueta_en: 'Pre-season master list',
+      tipo: 'clausula_addendum',
+      render: (ctx) => ({
+        en: `**Pre-Season Master List — Planning Ahead**
+
+For owners who spend only part of the year in the property and want to be personally present for repairs, installations, or major work, we'd like to propose a different way of handling requests going forward.
+
+Instead of sending individual requests throughout the off-season (which is also our busiest period with contractors), here's what we suggest:
+
+**In October, before you arrive for the season**, we'll put together a Master Pre-Season List. This is a single document that lists everything you want addressed during your stay: repairs, purchases, contractor visits, improvements, inspections. We review it together, decide priorities and timing, and schedule everything for when you're here.
+
+**Why this works better for you:**
+
+• You're personally present for the work, which is what you've asked for
+• Nothing moves forward without your sign-off
+• Access to the unit is managed exactly the way you want
+• You're not sending emails throughout the summer trying to track status
+
+**Why this works better for us:**
+
+• We can coordinate contractor schedules properly instead of chasing availability during high season
+• We're not executing instructions that get changed three times
+• We can focus high-season attention on your unit when it actually matters
+
+If something truly urgent comes up mid-season, of course we handle it. But routine "nice-to-have" items get batched into the master list and handled when you arrive.`,
+        es: '',
       }),
     },
 
@@ -191,8 +342,8 @@ const PLANTILLA_ADDENDUM = {
       siempre: true,
       render: (ctx) => ({
         firmas: [
-          { nombre: ctx.propietario.nombres, rol_es: ctx.propietario.clave === 'mp' || ctx.propietario.clave === 'fp' ? 'PROPIETARIOS / OWNERS' : 'PROPIETARIO / OWNER' },
-          { nombre: 'Claudia Rebeca Castillo Soto', rol_es: 'Representante legal / Legal Representative\nCASTLEBAY PV, SRL DE CV\nADMINISTRADORA / ADMINISTRATOR' },
+          { nombre: ctx.propietario.nombres, rol_es: ctx.propietario.clave === 'mp' || ctx.propietario.clave === 'fp' ? 'OWNERS' : 'OWNER' },
+          { nombre: 'Claudia Rebeca Castillo Soto', rol_es: 'Legal Representative\nCASTLEBAY PV, SRL DE CV\nADMINISTRATOR' },
         ],
         testigos: false,
         aceptacion: false,
