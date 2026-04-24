@@ -30,9 +30,6 @@ import {
   Header,
   Footer,
   PageNumber,
-  Tab,
-  TabStopType,
-  TabStopPosition,
   SectionType,
   VerticalAlign,
   ImageRun,
@@ -599,42 +596,47 @@ export async function generarDocx(bloques, meta = {}, opciones = {}) {
   };
 
   // Crear children del header
-  const headerChildren = [];
-  
+  // Estructura: Logo centrado arriba + Paginación a la derecha debajo
+  const headerParagraphs = [];
+
   if (tieneLogoReal) {
     const logoBuffer = Buffer.from(logoBase64, 'base64');
     const logoType = detectImageType(logoBase64);
-    headerChildren.push(
-      new ImageRun({
-        data: logoBuffer,
-        transformation: { width: LOGO_WIDTH, height: LOGO_HEIGHT },
-        type: logoType,
+    // Párrafo 1: Logo centrado
+    headerParagraphs.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 100 },
+        children: [
+          new ImageRun({
+            data: logoBuffer,
+            transformation: { width: LOGO_WIDTH, height: LOGO_HEIGHT },
+            type: logoType,
+          }),
+        ],
       })
     );
-    headerChildren.push(new TextRun({ children: [new Tab()] }));
   }
-  
-  // Paginación (siempre presente, a la derecha si hay logo, centrada si no)
-  headerChildren.push(
-    new TextRun({ text: 'Página ', font: FONT, size: 14, color: '888888' }),
-    new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 14, color: '888888' }),
-    new TextRun({ text: ' de ', font: FONT, size: 14, color: '888888' }),
-    new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, size: 14, color: '888888' }),
-    new TextRun({ text: '  |  Page ', font: FONT, size: 14, color: '888888' }),
-    new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 14, color: '888888' }),
-    new TextRun({ text: ' of ', font: FONT, size: 14, color: '888888' }),
-    new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, size: 14, color: '888888' })
+
+  // Párrafo 2: Paginación alineada a la derecha
+  headerParagraphs.push(
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [
+        new TextRun({ text: 'Página ', font: FONT, size: 14, color: '888888' }),
+        new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 14, color: '888888' }),
+        new TextRun({ text: ' de ', font: FONT, size: 14, color: '888888' }),
+        new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, size: 14, color: '888888' }),
+        new TextRun({ text: '  |  Page ', font: FONT, size: 14, color: '888888' }),
+        new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 14, color: '888888' }),
+        new TextRun({ text: ' of ', font: FONT, size: 14, color: '888888' }),
+        new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, size: 14, color: '888888' }),
+      ],
+    })
   );
 
-  // Header: Logo izquierda + Paginación derecha (usando TabStops)
   const headerDefault = new Header({
-    children: [
-      new Paragraph({
-        tabStops: tieneLogoReal ? [{ type: TabStopType.RIGHT, position: CONTENT_WIDTH }] : [],
-        alignment: tieneLogoReal ? undefined : AlignmentType.RIGHT,
-        children: headerChildren,
-      }),
-    ],
+    children: headerParagraphs,
   });
 
   // Footer con iniciales (sección principal)
@@ -655,7 +657,14 @@ export async function generarDocx(bloques, meta = {}, opciones = {}) {
   const pageProps = {
     page: {
       size: { width: PAGE_WIDTH, height: PAGE_HEIGHT },
-      margin: { top: MARGIN, right: MARGIN, bottom: MARGIN, left: MARGIN },
+      margin: {
+        top: MARGIN,
+        right: MARGIN,
+        bottom: MARGIN,
+        left: MARGIN,
+        header: 360,  // 0.25" desde borde superior al header (default de Word es ~0.5"/720)
+        footer: 360,
+      },
     },
   };
 
