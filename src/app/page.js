@@ -162,13 +162,13 @@ const INIT_ADDENDUM = {
 // ============================================================
 // HELPERS
 // ============================================================
-function ensamblar(data) {
-  try { return ensamblarContexto(PLANTILLA, data); }
+function ensamblar(plantilla, data) {
+  try { return ensamblarContexto(plantilla, data); }
   catch (e) { console.error('ensamblar:', e.message); return null; }
 }
-function renderBlks(ctx) {
+function renderBlks(plantilla, ctx) {
   if (!ctx) return [];
-  try { return renderizarBloques(PLANTILLA, ctx); }
+  try { return renderizarBloques(plantilla, ctx); }
   catch (e) { console.error('renderBlks:', e.message); return []; }
 }
 
@@ -233,6 +233,7 @@ export default function AdminGenPage() {
   const [generating, setGenerating] = useState(false);
   const [logoBase64, setLogoBase64] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [expandedClause, setExpandedClause] = useState(null);
 
   // Plantilla activa según el modo
   const plantillaActiva = modo === "addendum" ? PLANTILLA_ADDENDUM : PLANTILLA_CONTRATO;
@@ -259,12 +260,12 @@ export default function AdminGenPage() {
     return () => clearTimeout(t);
   }, [data]);
 
-  const upParte = (pid, k, v) => setData(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], [k]: v } } }));
-  const upPersona = (pid, i, k, v) => setData(d => { const pp = [...d.partes[pid].personas]; pp[i] = { ...pp[i], [k]: v }; return { ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: pp } } }; });
-  const addPersona = (pid) => setData(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: [...d.partes[pid].personas, { nombre: "", genero: "M" }] } } }));
-  const rmPersona = (pid, i) => setData(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: d.partes[pid].personas.filter((_, j) => j !== i) } } }));
-  const upCampo = (sec, k, v) => setData(d => ({ ...d, campos: { ...d.campos, [sec]: { ...d.campos[sec], [k]: v } } }));
-  const togBloque = (id) => setData(d => {
+  const upParte = (pid, k, v) => setDatosActivos(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], [k]: v } } }));
+  const upPersona = (pid, i, k, v) => setDatosActivos(d => { const pp = [...d.partes[pid].personas]; pp[i] = { ...pp[i], [k]: v }; return { ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: pp } } }; });
+  const addPersona = (pid) => setDatosActivos(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: [...d.partes[pid].personas, { nombre: "", genero: "M" }] } } }));
+  const rmPersona = (pid, i) => setDatosActivos(d => ({ ...d, partes: { ...d.partes, [pid]: { ...d.partes[pid], personas: d.partes[pid].personas.filter((_, j) => j !== i) } } }));
+  const upCampo = (sec, k, v) => setDatosActivos(d => ({ ...d, campos: { ...d.campos, [sec]: { ...d.campos[sec], [k]: v } } }));
+  const togBloque = (id) => setDatosActivos(d => {
     const nuevoValor = !d.bloques[id];
     const nuevosBloques = { ...d.bloques, [id]: nuevoValor };
     // Si se apaga cl_limpieza, apagar también los accesorios b.1, b.2 y b.3
@@ -295,7 +296,7 @@ export default function AdminGenPage() {
   const clearLogo = useCallback(() => { setLogoBase64(null); setLogoPreview(null); }, []);
 
   const exportDraft = useCallback(() => {
-    const nombre = data.partes?.propietario?.personas?.[0]?.nombre?.split(" ")[0] || "BORRADOR";
+    const nombre = datosActivos.partes?.propietario?.personas?.[0]?.nombre?.split(" ")[0] || "BORRADOR";
     const fecha = new Date().toISOString().slice(0, 10);
     const blob = new Blob([JSON.stringify({ version: "1.0", type: "admin_contract", exportedAt: new Date().toISOString(), step, data }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -316,17 +317,20 @@ export default function AdminGenPage() {
     input.click();
   }, []);
 
-  const ctx = useMemo(() => ensamblar(data), [data]);
-  const bloques = useMemo(() => renderBlks(ctx), [ctx]);
+  const ctx = useMemo(() => ensamblar(plantillaActiva, datosActivos), [plantillaActiva, datosActivos]);
+  const bloques = useMemo(() => renderBlks(plantillaActiva, ctx), [plantillaActiva, ctx]);
 
   const handleGenerate = useCallback(async () => {
     if (!bloques.length) return;
     setGenerating(true);
     try {
-      const blob = await generarDocxBlob(bloques, PLANTILLA.meta, { logoBase64 });
-      const nombre = data.partes.propietario.personas[0]?.nombre?.replace(/\s+/g, "_") || "CONTRATO";
+      const blob = await generarDocxBlob(bloques, plantillaActiva.meta, { logoBase64 });
+      const nombre = datosActivos.partes.propietario.personas[0]?.nombre?.replace(/\s+/g, "_") || "OWNER";
+      const prefijo = modo === "addendum"
+        ? `ADDENDUM_${datosActivos.campos.propiedad?.addendum_numero || "1"}`
+        : "CONTRATO_ADMIN";
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = `CONTRATO_ADMIN_${nombre}.docx`;
+      const a = document.createElement("a"); a.href = url; a.download = `${prefijo}_${nombre}.docx`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -334,7 +338,7 @@ export default function AdminGenPage() {
       alert("Error al generar el documento. Revisa la consola.");
     }
     setGenerating(false);
-  }, [bloques, data.partes.propietario.personas]);
+  }, [bloques, datosActivos.partes.propietario.personas, plantillaActiva, modo, datosActivos.campos.propiedad, logoBase64]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -396,11 +400,11 @@ export default function AdminGenPage() {
         {/* STEP 0 — PROPIETARIO */}
         {step === 0 && <>
           <Section title="Propietario / Owner">
-            {data.partes.propietario.personas.map((per, i) => (
+            {datosActivos.partes.propietario.personas.map((per, i) => (
               <div key={i} className="col-span-2 flex flex-col gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-gray-400">Propietario {i + 1}</span>
-                  {data.partes.propietario.personas.length > 1 && <button onClick={() => rmPersona("propietario", i)} className="ml-auto text-xs text-red-500 hover:text-red-700">Quitar</button>}
+                  {datosActivos.partes.propietario.personas.length > 1 && <button onClick={() => rmPersona("propietario", i)} className="ml-auto text-xs text-red-500 hover:text-red-700">Quitar</button>}
                 </div>
                 <input value={per.nombre} onChange={e => upPersona("propietario", i, "nombre", e.target.value.toUpperCase())} placeholder="NOMBRE COMPLETO"
                   className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 focus:ring-2 focus:ring-teal-400 outline-none font-medium" />
@@ -413,8 +417,8 @@ export default function AdminGenPage() {
               </div>
             ))}
             <button onClick={() => addPersona("propietario")} className="col-span-2 text-xs text-teal-500 hover:text-teal-700 py-1">+ Agregar propietario</button>
-            <Input label="Email" value={data.partes.propietario.email} onChange={v => upParte("propietario", "email", v)} type="email" required />
-            <Input label="Celular / WhatsApp" value={data.partes.propietario.celular} onChange={v => upParte("propietario", "celular", v)} type="tel" required placeholder="+52 322 ..." />
+            <Input label="Email" value={datosActivos.partes.propietario.email} onChange={v => upParte("propietario", "email", v)} type="email" required />
+            <Input label="Celular / WhatsApp" value={datosActivos.partes.propietario.celular} onChange={v => upParte("propietario", "celular", v)} type="tel" required placeholder="+52 322 ..." />
           </Section>
           <div className="p-4 bg-teal-50 dark:bg-teal-900/10 rounded-xl border border-teal-200 dark:border-teal-800">
             <h4 className="text-xs font-semibold text-teal-700 dark:text-teal-300 mb-1">Administrador (fijo)</h4>
@@ -423,21 +427,21 @@ export default function AdminGenPage() {
           </div>
         </>}
 
-        {/* STEP 1 — PROPIEDAD */}
-        {step === 1 && <>
+        {/* STEP 1 — PROPIEDAD (modo contrato) */}
+        {step === 1 && modo === "contrato" && <>
           <Section title="Datos de la propiedad">
-            <Input label="Dirección completa" value={data.campos.propiedad?.direccion} onChange={v => upCampo("propiedad", "direccion", v)} placeholder="Condominio, dirección, municipio, estado, CP" required wide rows={3} />
+            <Input label="Dirección completa" value={datosActivos.campos.propiedad?.direccion} onChange={v => upCampo("propiedad", "direccion", v)} placeholder="Condominio, dirección, municipio, estado, CP" required wide rows={3} />
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Tipo de propiedad</label>
-              <select value={data.campos.propiedad?.tipo_propiedad || "condominio"} onChange={e => {
+              <select value={datosActivos.campos.propiedad?.tipo_propiedad || "condominio"} onChange={e => {
                 const tipo = e.target.value;
                 const esCondo = tipo === "condominio" || tipo === "penthouse";
                 upCampo("propiedad", "tipo_propiedad", tipo);
                 upCampo("propiedad", "es_condominio", esCondo);
                 if (!esCondo) {
-                  setData(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: false, cl_acceso_condominios: false, cl_asambleas: false}}));
+                  setDatosActivos(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: false, cl_acceso_condominios: false, cl_asambleas: false}}));
                 } else {
-                  setData(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: true, cl_acceso_condominios: true, cl_asambleas: true}}));
+                  setDatosActivos(d => ({...d, bloques: {...d.bloques, cl_condominio_areas: true, cl_acceso_condominios: true, cl_asambleas: true}}));
                 }
               }}
                 className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800">
@@ -447,17 +451,17 @@ export default function AdminGenPage() {
                 <option value="penthouse">Penthouse</option>
               </select>
             </div>
-            {!(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && (
+            {!(datosActivos.campos.propiedad?.tipo_propiedad === "condominio" || datosActivos.campos.propiedad?.tipo_propiedad === "penthouse") && (
               <div className="col-span-2 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-200 dark:border-amber-800">
                 <p className="text-xs text-amber-700 dark:text-amber-300">Las cláusulas de condominio (áreas comunes, acceso, asambleas) se desactivan automáticamente para este tipo de propiedad.</p>
               </div>
             )}
           </Section>
           <Section title="Vigencia y firma">
-            <Input label="Fecha de inicio" value={data.campos.vigencia?.fecha_inicio} onChange={v => upCampo("vigencia", "fecha_inicio", v)} type="date" required />
+            <Input label="Fecha de inicio" value={datosActivos.campos.vigencia?.fecha_inicio} onChange={v => upCampo("vigencia", "fecha_inicio", v)} type="date" required />
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Duración</label>
-              <select value={data.campos.vigencia?.duracion || "indefinida"} onChange={e => upCampo("vigencia", "duracion", e.target.value)}
+              <select value={datosActivos.campos.vigencia?.duracion || "indefinida"} onChange={e => upCampo("vigencia", "duracion", e.target.value)}
                 className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800">
                 <option value="indefinida">Indefinida</option>
                 <option value="12">12 meses</option>
@@ -466,102 +470,152 @@ export default function AdminGenPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Ciudad de firma</label>
-              <select value={data.campos.vigencia?.ciudad_firma || "Puerto Vallarta, Jalisco"} onChange={e => upCampo("vigencia", "ciudad_firma", e.target.value)}
+              <select value={datosActivos.campos.vigencia?.ciudad_firma || "Puerto Vallarta, Jalisco"} onChange={e => upCampo("vigencia", "ciudad_firma", e.target.value)}
                 className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800">
                 <option value="Puerto Vallarta, Jalisco">Puerto Vallarta, Jalisco</option>
                 <option value="Nuevo Vallarta, Nayarit">Nuevo Vallarta, Nayarit</option>
               </select>
             </div>
-            <Input label="Días de aviso para cancelación" value={data.campos.vigencia?.dias_aviso_cancelacion} onChange={v => upCampo("vigencia", "dias_aviso_cancelacion", v)} type="number" />
-            <Input label="Juegos de llaves" value={data.campos.vigencia?.num_llaves} onChange={v => upCampo("vigencia", "num_llaves", v)} type="number" />
+            <Input label="Días de aviso para cancelación" value={datosActivos.campos.vigencia?.dias_aviso_cancelacion} onChange={v => upCampo("vigencia", "dias_aviso_cancelacion", v)} type="number" />
+            <Input label="Juegos de llaves" value={datosActivos.campos.vigencia?.num_llaves} onChange={v => upCampo("vigencia", "num_llaves", v)} type="number" />
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <input type="checkbox" checked={data.campos.vigencia?.incluir_codigo_acceso !== false} onChange={e => upCampo("vigencia", "incluir_codigo_acceso", e.target.checked)} className="rounded" />
+              <input type="checkbox" checked={datosActivos.campos.vigencia?.incluir_codigo_acceso !== false} onChange={e => upCampo("vigencia", "incluir_codigo_acceso", e.target.checked)} className="rounded" />
               <label className="text-sm">O código de acceso (door code)</label>
             </div>
           </Section>
         </>}
 
-        {/* STEP 2 — HONORARIOS */}
-        {step === 2 && <>
+        {/* STEP 1 — REFERENCIA AL CONTRATO (modo addendum) */}
+        {step === 1 && modo === "addendum" && <>
+          <Section title="Datos de la propiedad">
+            <Input label="Dirección completa de la propiedad" value={datosActivos.campos.propiedad?.direccion} onChange={v => upCampo("propiedad", "direccion", v)} placeholder="ej. Villa Magna 352A & 352B, Puerto Vallarta, Jalisco" required wide rows={2} />
+            <Input label="Número de addendum" value={datosActivos.campos.propiedad?.addendum_numero} onChange={v => upCampo("propiedad", "addendum_numero", v)} placeholder="1" sub="Ej: 1 para el primer addendum de este cliente. Se mostrará como 'ADDENDUM NO. 1'." />
+          </Section>
+          <Section title="Referencia al contrato principal">
+            <Input label="Fecha del contrato principal" value={datosActivos.campos.contrato_base?.fecha_contrato} onChange={v => upCampo("contrato_base", "fecha_contrato", v)} placeholder="ej. April 15, 2026" required sub="Fecha del contrato de administración al que este addendum se refiere (en inglés)." />
+            <Input label="Fecha efectiva del addendum" value={datosActivos.campos.contrato_base?.fecha_efectiva} onChange={v => upCampo("contrato_base", "fecha_efectiva", v)} placeholder="ej. April 23, 2026" required sub="Fecha de firma y entrada en vigor de este addendum (en inglés)." />
+          </Section>
+          <div className="p-4 bg-teal-50 dark:bg-teal-900/10 rounded-xl border border-teal-200 dark:border-teal-800">
+            <h4 className="text-xs font-semibold text-teal-700 dark:text-teal-300 mb-1">📋 Addendum — Documento separado</h4>
+            <p className="text-xs text-teal-600 dark:text-teal-400 leading-relaxed">Este documento se genera por separado del contrato de administración. Formalmente lo modifica/precisa para un cliente específico. Tono conversacional directo (estilo redacción de Claudia), idioma principal inglés con nota bilingüe de prevalencia.</p>
+          </div>
+        </>}
+
+        {/* STEP 2 — CLÁUSULAS del ADDENDUM (modo addendum) */}
+        {step === 2 && modo === "addendum" && <div className="flex flex-col gap-3">
+          <p className="text-xs text-gray-500 mb-2">Activa solo las cláusulas que aplican a este propietario. Haz click en la flecha para ver el preview completo de cada una.</p>
+          {plantillaActiva.bloques.filter(b => b.condicional).map(bloque => {
+            const activo = datosActivos.bloques?.[bloque.id] === true;
+            const expanded = expandedClause === bloque.id;
+            const preview = bloque.render({ fecha_contrato: datosActivos.campos.contrato_base?.fecha_contrato || '___', propietario: { nombres: datosActivos.partes.propietario.personas?.[0]?.nombre || 'OWNER', clave: 'vf' } });
+            return (
+              <div key={bloque.id} className={`rounded-xl border transition-all ${activo ? "border-teal-300 dark:border-teal-700 bg-teal-50/40 dark:bg-teal-900/10" : "border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-800/30"}`}>
+                <div className="flex items-center gap-3 p-3">
+                  <div onClick={() => togBloque(bloque.id)} className="cursor-pointer">
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${activo ? "bg-teal-500" : "bg-gray-300 dark:bg-gray-600"}`}>
+                      <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${activo ? "left-5" : "left-0.5"}`} />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => togBloque(bloque.id)}>
+                    <div className="text-sm font-medium">{bloque.etiqueta}</div>
+                  </div>
+                  <button onClick={() => setExpandedClause(expanded ? null : bloque.id)} className="text-xs text-gray-400 hover:text-teal-600 px-2 py-1">
+                    {expanded ? "▼ Ocultar" : "▶ Preview"}
+                  </button>
+                </div>
+                {expanded && (
+                  <div className="px-4 pb-4 pt-1 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50">
+                    <div className="text-xs leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap max-h-96 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      {preview.en || preview.es}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>}
+
+        {/* STEP 2 — HONORARIOS (modo contrato) */}
+        {step === 2 && modo === "contrato" && <>
           <Section title="Cuota de administración">
-            <Input label="Cuota mensual (USD)" value={data.campos.honorarios?.cuota_mensual} onChange={v => upCampo("honorarios", "cuota_mensual", v)} type="number" required />
+            <Input label="Cuota mensual (USD)" value={datosActivos.campos.honorarios?.cuota_mensual} onChange={v => upCampo("honorarios", "cuota_mensual", v)} type="number" required />
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <input type="checkbox" checked={data.campos.honorarios?.cuota_no_negociable !== false} onChange={e => upCampo("honorarios", "cuota_no_negociable", e.target.checked)} className="rounded" />
+                <input type="checkbox" checked={datosActivos.campos.honorarios?.cuota_no_negociable !== false} onChange={e => upCampo("honorarios", "cuota_no_negociable", e.target.checked)} className="rounded" />
                 <label className="text-sm">No negociable</label>
               </div>
               <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <input type="checkbox" checked={data.campos.honorarios?.incluye_iva !== false} onChange={e => upCampo("honorarios", "incluye_iva", e.target.checked)} className="rounded" />
+                <input type="checkbox" checked={datosActivos.campos.honorarios?.incluye_iva !== false} onChange={e => upCampo("honorarios", "incluye_iva", e.target.checked)} className="rounded" />
                 <label className="text-sm">Más IVA (16%)</label>
               </div>
             </div>
           </Section>
           <Section title="Reparaciones y servicios">
-            <Input label="Umbral reparación sin autorización (USD)" value={data.campos.honorarios?.umbral_reparacion} onChange={v => upCampo("honorarios", "umbral_reparacion", v)} type="number" sub="Reparaciones por debajo de este monto no requieren autorización" />
-            <Input label="Tarifa servicios especiales (USD/hr)" value={data.campos.honorarios?.tarifa_servicios_especiales} onChange={v => upCampo("honorarios", "tarifa_servicios_especiales", v)} type="number" />
-            <Input label="% supervisión de obras" value={data.campos.honorarios?.porcentaje_supervision} onChange={v => upCampo("honorarios", "porcentaje_supervision", v)} placeholder="10%" />
+            <Input label="Umbral reparación sin autorización (USD)" value={datosActivos.campos.honorarios?.umbral_reparacion} onChange={v => upCampo("honorarios", "umbral_reparacion", v)} type="number" sub="Reparaciones por debajo de este monto no requieren autorización" />
+            <Input label="Tarifa servicios especiales (USD/hr)" value={datosActivos.campos.honorarios?.tarifa_servicios_especiales} onChange={v => upCampo("honorarios", "tarifa_servicios_especiales", v)} type="number" />
+            <Input label="% supervisión de obras" value={datosActivos.campos.honorarios?.porcentaje_supervision} onChange={v => upCampo("honorarios", "porcentaje_supervision", v)} placeholder="10%" />
           </Section>
           <Section title="Asambleas de condóminos">
-            <Input label="Costo asamblea (USD por 2 hrs)" value={data.campos.honorarios?.costo_asamblea} onChange={v => upCampo("honorarios", "costo_asamblea", v)} type="number" />
-            <Input label="Costo hora adicional (USD)" value={data.campos.honorarios?.costo_hora_adicional_asamblea} onChange={v => upCampo("honorarios", "costo_hora_adicional_asamblea", v)} type="number" />
+            <Input label="Costo asamblea (USD por 2 hrs)" value={datosActivos.campos.honorarios?.costo_asamblea} onChange={v => upCampo("honorarios", "costo_asamblea", v)} type="number" />
+            <Input label="Costo hora adicional (USD)" value={datosActivos.campos.honorarios?.costo_hora_adicional_asamblea} onChange={v => upCampo("honorarios", "costo_hora_adicional_asamblea", v)} type="number" />
           </Section>
           <Section title="Reportes">
-            <Input label="Días para reporte de gastos" value={data.campos.reportes?.dias_reporte} onChange={v => upCampo("reportes", "dias_reporte", v)} type="number" />
-            <Input label="Días para inconformarse" value={data.campos.reportes?.dias_inconformidad} onChange={v => upCampo("reportes", "dias_inconformidad", v)} type="number" />
+            <Input label="Días para reporte de gastos" value={datosActivos.campos.reportes?.dias_reporte} onChange={v => upCampo("reportes", "dias_reporte", v)} type="number" />
+            <Input label="Días para inconformarse" value={datosActivos.campos.reportes?.dias_inconformidad} onChange={v => upCampo("reportes", "dias_inconformidad", v)} type="number" />
           </Section>
         </>}
 
-        {/* STEP 3 — CLÁUSULAS (toggles) */}
-        {step === 3 && <div className="flex flex-col gap-3">
+        {/* STEP 3 — CLÁUSULAS del CONTRATO (modo contrato) */}
+        {step === 3 && modo === "contrato" && <div className="flex flex-col gap-3">
           <p className="text-xs text-gray-500 mb-2">Activa o desactiva cláusulas opcionales. Las cláusulas core (exclusividad, reportes, mantenimiento, pagos, cuota, llaves, duración, precios, notificaciones, jurisdicción) siempre se incluyen.</p>
 
           <div className="mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Exclusividad</p></div>
-          <Toggle label="Exclusividad de renta vacacional" sub="Derecho exclusivo de publicar en Airbnb, VRBO, Booking y medios digitales" checked={data.bloques.cl_exclusividad_renta} onChange={() => togBloque("cl_exclusividad_renta")} />
-          <Toggle label="Exclusividad de listing si decide vender" sub="Primera opción para listar en exclusiva 180 días. Cambio de agent durante ese periodo → terminación del contrato con 30 días de aviso." checked={data.bloques.cl_exclusividad_venta} onChange={() => togBloque("cl_exclusividad_venta")} />
+          <Toggle label="Exclusividad de renta vacacional" sub="Derecho exclusivo de publicar en Airbnb, VRBO, Booking y medios digitales" checked={datosActivos.bloques.cl_exclusividad_renta} onChange={() => togBloque("cl_exclusividad_renta")} />
+          <Toggle label="Exclusividad de listing si decide vender" sub="Primera opción para listar en exclusiva 180 días. Cambio de agent durante ese periodo → terminación del contrato con 30 días de aviso." checked={datosActivos.bloques.cl_exclusividad_venta} onChange={() => togBloque("cl_exclusividad_venta")} />
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Servicios</p></div>
-          <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={data.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
-          <Toggle label="Servicios de limpieza" sub="Alcance: la cuota no incluye limpieza. Tipos: light/check-out/deep. Lógica deep→light" checked={data.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
-          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
-            <Toggle label="↳ Limpieza — logística y tarifas" sub="Preaviso 7 días, emergencias con cargo, domingos/festivos doble tarifa, productos por cuenta del owner" checked={data.bloques.cl_limpieza_logistica} onChange={() => togBloque("cl_limpieza_logistica")} disabled={!data.bloques.cl_limpieza} />
+          <Toggle label="Autorización info de ocupantes" sub="Admin puede recibir info/consejo de ocupantes vía email" checked={datosActivos.bloques.cl_reportes_ocupantes} onChange={() => togBloque("cl_reportes_ocupantes")} />
+          <Toggle label="Servicios de limpieza" sub="Alcance: la cuota no incluye limpieza. Tipos: light/check-out/deep. Lógica deep→light" checked={datosActivos.bloques.cl_limpieza} onChange={() => togBloque("cl_limpieza")} />
+          <div className={datosActivos.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — logística y tarifas" sub="Preaviso 7 días, emergencias con cargo, domingos/festivos doble tarifa, productos por cuenta del owner" checked={datosActivos.bloques.cl_limpieza_logistica} onChange={() => togBloque("cl_limpieza_logistica")} disabled={!datosActivos.bloques.cl_limpieza} />
           </div>
-          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
-            <Toggle label="↳ Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={data.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} disabled={!data.bloques.cl_limpieza} />
+          <div className={datosActivos.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — inspecciones periódicas" sub="Admin puede inspeccionar electrodomésticos, fugas, ventilación, alberca — con aviso razonable al ocupante" checked={datosActivos.bloques.cl_limpieza_inspecciones} onChange={() => togBloque("cl_limpieza_inspecciones")} disabled={!datosActivos.bloques.cl_limpieza} />
           </div>
-          <div className={data.bloques.cl_limpieza ? "" : "opacity-60"}>
-            <Toggle label="↳ Limpieza — personal contratado" sub="Owner/condominio que contrata directo asume responsabilidades laborales. Admin que contrata asume las suyas (Jalisco/Nayarit)" checked={data.bloques.cl_limpieza_personal} onChange={() => togBloque("cl_limpieza_personal")} disabled={!data.bloques.cl_limpieza} />
+          <div className={datosActivos.bloques.cl_limpieza ? "" : "opacity-60"}>
+            <Toggle label="↳ Limpieza — personal contratado" sub="Owner/condominio que contrata directo asume responsabilidades laborales. Admin que contrata asume las suyas (Jalisco/Nayarit)" checked={datosActivos.bloques.cl_limpieza_personal} onChange={() => togBloque("cl_limpieza_personal")} disabled={!datosActivos.bloques.cl_limpieza} />
           </div>
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">🏠 Rentas</p></div>
-          <Toggle label="Rentas cubren gastos" sub="Los ingresos por renta (vacacional o tradicional) se aplican primero a gastos, luego a cuota, y el remanente va al owner. Solo si Castle cobra las rentas." checked={data.bloques.cl_rentas_cubren_gastos} onChange={() => togBloque("cl_rentas_cubren_gastos")} />
-          <div className={data.bloques.cl_rentas_cubren_gastos ? "" : "opacity-60"}>
-            <Toggle label="↳ Rentas — gestión fiscal (ISR/IVA/ISH)" sub="Castle gestiona impuestos por rentas por cuenta del owner. Deslinde de responsabilidad solidaria — owner sigue siendo el contribuyente." checked={data.bloques.cl_rentas_impuestos} onChange={() => togBloque("cl_rentas_impuestos")} disabled={!data.bloques.cl_rentas_cubren_gastos} />
+          <Toggle label="Rentas cubren gastos" sub="Los ingresos por renta (vacacional o tradicional) se aplican primero a gastos, luego a cuota, y el remanente va al owner. Solo si Castle cobra las rentas." checked={datosActivos.bloques.cl_rentas_cubren_gastos} onChange={() => togBloque("cl_rentas_cubren_gastos")} />
+          <div className={datosActivos.bloques.cl_rentas_cubren_gastos ? "" : "opacity-60"}>
+            <Toggle label="↳ Rentas — gestión fiscal (ISR/IVA/ISH)" sub="Castle gestiona impuestos por rentas por cuenta del owner. Deslinde de responsabilidad solidaria — owner sigue siendo el contribuyente." checked={datosActivos.bloques.cl_rentas_impuestos} onChange={() => togBloque("cl_rentas_impuestos")} disabled={!datosActivos.bloques.cl_rentas_cubren_gastos} />
           </div>
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">⚖️ Valor agregado Castle Solutions</p></div>
-          <Toggle label="Plus de asistencia legal" sub="Consultas breves sin costo sobre la propiedad (inmobiliario, condominal, migratorio, fiscal). Trámites mayores se negocian con estrategia y presupuesto." checked={data.bloques.cl_asistencia_legal} onChange={() => togBloque("cl_asistencia_legal")} />
+          <Toggle label="Plus de asistencia legal" sub="Consultas breves sin costo sobre la propiedad (inmobiliario, condominal, migratorio, fiscal). Trámites mayores se negocian con estrategia y presupuesto." checked={datosActivos.bloques.cl_asistencia_legal} onChange={() => togBloque("cl_asistencia_legal")} />
 
-          {(data.campos.propiedad?.tipo_propiedad === "condominio" || data.campos.propiedad?.tipo_propiedad === "penthouse") && <>
+          {(datosActivos.campos.propiedad?.tipo_propiedad === "condominio" || datosActivos.campos.propiedad?.tipo_propiedad === "penthouse") && <>
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Condominios</p></div>
-          <Toggle label="Responsabilidad áreas comunes" sub="Deslinde: áreas comunes = responsabilidad del admin condominal" checked={data.bloques.cl_condominio_areas} onChange={() => togBloque("cl_condominio_areas")} />
-          <Toggle label="Acceso a condominios" sub="Owner hace arreglos para acceso ininterrumpido del admin" checked={data.bloques.cl_acceso_condominios} onChange={() => togBloque("cl_acceso_condominios")} />
-          <Toggle label="Representación en asambleas" sub="Admin representa al owner en asamblea con proxy ($100+IVA/2hrs)" checked={data.bloques.cl_asambleas} onChange={() => togBloque("cl_asambleas")} />
+          <Toggle label="Responsabilidad áreas comunes" sub="Deslinde: áreas comunes = responsabilidad del admin condominal" checked={datosActivos.bloques.cl_condominio_areas} onChange={() => togBloque("cl_condominio_areas")} />
+          <Toggle label="Acceso a condominios" sub="Owner hace arreglos para acceso ininterrumpido del admin" checked={datosActivos.bloques.cl_acceso_condominios} onChange={() => togBloque("cl_acceso_condominios")} />
+          <Toggle label="Representación en asambleas" sub="Admin representa al owner en asamblea con proxy ($100+IVA/2hrs)" checked={datosActivos.bloques.cl_asambleas} onChange={() => togBloque("cl_asambleas")} />
           </>}
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Protecciones</p></div>
-          <Toggle label="Cláusula de responsabilidad" sub="Admin no responsable por temas judiciales/penales del owner" checked={data.bloques.cl_responsabilidad} onChange={() => togBloque("cl_responsabilidad")} />
-          <Toggle label="Aviso de venta" sub="Owner avisa 30 días antes del cierre de venta" checked={data.bloques.cl_venta_propiedad} onChange={() => togBloque("cl_venta_propiedad")} />
-          <Toggle label="Facturas deducibles (RFC)" sub="Owner provee RFC para facturas fiscales" checked={data.bloques.cl_facturas} onChange={() => togBloque("cl_facturas")} />
+          <Toggle label="Cláusula de responsabilidad" sub="Admin no responsable por temas judiciales/penales del owner" checked={datosActivos.bloques.cl_responsabilidad} onChange={() => togBloque("cl_responsabilidad")} />
+          <Toggle label="Aviso de venta" sub="Owner avisa 30 días antes del cierre de venta" checked={datosActivos.bloques.cl_venta_propiedad} onChange={() => togBloque("cl_venta_propiedad")} />
+          <Toggle label="Facturas deducibles (RFC)" sub="Owner provee RFC para facturas fiscales" checked={datosActivos.bloques.cl_facturas} onChange={() => togBloque("cl_facturas")} />
 
           <div className="mt-3 mb-2"><p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Otros — Final del documento</p></div>
-          <Toggle label="Incluir líneas de testigos" sub="Testigo 1 / Witness 1 y Testigo 2 / Witness 2. OFF por default — no se requieren en contratos privados de prestación de servicios." checked={data.campos.testigos?.incluir_testigos === true} onChange={v => upCampo("testigos", "incluir_testigos", v)} />
-          <Toggle label="Incluir lugar/fecha de aceptación" sub="'LUGAR, FECHA Y HORA DE ACEPTACIÓN'. OFF por default — típico de ofertas unilaterales, no de contratos bilaterales." checked={data.campos.testigos?.incluir_aceptacion === true} onChange={v => upCampo("testigos", "incluir_aceptacion", v)} />
+          <Toggle label="Incluir líneas de testigos" sub="Testigo 1 / Witness 1 y Testigo 2 / Witness 2. OFF por default — no se requieren en contratos privados de prestación de servicios." checked={datosActivos.campos.testigos?.incluir_testigos === true} onChange={v => upCampo("testigos", "incluir_testigos", v)} />
+          <Toggle label="Incluir lugar/fecha de aceptación" sub="'LUGAR, FECHA Y HORA DE ACEPTACIÓN'. OFF por default — típico de ofertas unilaterales, no de contratos bilaterales." checked={datosActivos.campos.testigos?.incluir_aceptacion === true} onChange={v => upCampo("testigos", "incluir_aceptacion", v)} />
         </div>}
 
-        {/* STEP 4 — PREVIEW */}
-        {step === 4 && <div>
+        {/* STEP PREVIEW — contrato step=4, addendum step=3 */}
+        {((step === 4 && modo === "contrato") || (step === 3 && modo === "addendum")) && <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Vista previa bilingüe</h2>
+            <h2 className="text-lg font-semibold">{modo === "addendum" ? "Vista previa (Inglés)" : "Vista previa bilingüe"}</h2>
             <button onClick={handleGenerate} disabled={generating || !bloques.length}
               className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 text-white text-sm font-medium rounded-xl transition shadow-sm disabled:shadow-none">
               {generating ? "Generando..." : "Descargar .docx"}
